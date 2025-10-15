@@ -10,11 +10,10 @@ const path = require("path")
 const authRoutes = require("./src/routes/auth.routes")
 const userRoutes = require("./src/routes/user.routes")
 const employeeRoutes = require("./src/routes/employee.routes")
-const departmentRoutes = require("./src/routes/department.routes")
 const transactionRoutes = require("./src/routes/transaction.routes")
 const payrollRoutes = require("./src/routes/payroll.routes")
 const attendanceRoutes = require("./src/routes/attendance.routes")
-
+const customerRoutes = require("./src/routes/customer.routes")
 // Cấu hình dotenv
 dotenv.config()
 
@@ -27,13 +26,13 @@ const app = express()
 // Cấu hình CORS - cho phép frontend truy cập
 app.use(
   cors({
-    origin: ["http://localhost:3000","http://localhost:5173", "http://127.0.0.1:5173"],
+    origin: ["http://localhost:5173", "http://127.0.0.1:5173" , "http://localhost:3000"],
     credentials: true, // Cho phép gửi cookie qua CORS
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
   }),
 )
-
+ 
 // Middleware
 app.use(cookieParser()) // Xử lý cookie
 app.use(express.json())
@@ -52,10 +51,10 @@ app.use((req, res, next) => {
 app.use("/api/auth", authRoutes)
 app.use("/api/users", userRoutes)
 app.use("/api/employees", employeeRoutes)
-app.use("/api/departments", departmentRoutes)
 app.use("/api/transactions", transactionRoutes)
 app.use("/api/payrolls", payrollRoutes)
 app.use("/api/attendance", attendanceRoutes)
+app.use("/api/customer", customerRoutes)
 
 // Route mặc định
 app.get("/", (req, res) => res.send("🩺 HRIS API is running"))
