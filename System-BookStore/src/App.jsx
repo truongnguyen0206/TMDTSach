@@ -15,7 +15,6 @@ import Login from "./pages/Login"
 import ForgotPassword from "./pages/ForgotPassword"
 import ResetPassword from "./pages/ResetPassword"
 import { setAuthToken } from "./utils/auth"
-import AddBookPage from "./pages/AddBookPage"
 import WarehousePage from "./pages/WarehousePage"
 import CustomerPage from "./pages/CustomerPage"
 import Customers from "./pages/CustomerPage"
@@ -23,6 +22,12 @@ import Inventory from "./pages/Inventory"
 import ImportGoods from "./pages/ImportGoods"
 import DetailOrders from "./pages/DetailOrders"
 import RevenueDashboard from "./pages/ThongKe"
+import BookManagementPage from "./pages/BookManagementPage"
+import ImportBooksPage from "./pages/khohang/ImportBookPage"
+import BookInventoryPage from "./pages/khohang/BookInventoryPage"
+import PromotionForm from "./pages/khuyenmai/PromotionForm"
+
+
 
 // Bảo vệ route yêu cầu xác thực cho Admin
 const RequireAuth = ({ children }) => {
@@ -116,7 +121,7 @@ function App() {
         >
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="employees" element={<Employees />} />
-          <Route path="addBookPage" element={<AddBookPage />} />
+    
           <Route path="customers" element={<Customers />} />
           <Route path="inventory" element={<Inventory />} />
           <Route path="import-goods" element={<ImportGoods />} />
@@ -125,6 +130,13 @@ function App() {
           <Route path="settings" element={<Settings />} />
           
           <Route path="thong-ke" element={<RevenueDashboard />} />
+
+          <Route path="book-management" element={<BookManagementPage />} />
+      
+        <Route path="bookInventoryPage" element={<BookInventoryPage />} />
+        <Route path="importBookPage" element={<ImportBooksPage />} />
+
+             <Route path="promotionForm" element={<PromotionForm />} />
         </Route>
 
         {/* Route không tồn tại */}
