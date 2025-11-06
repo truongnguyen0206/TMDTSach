@@ -148,6 +148,7 @@ export default function ImportBooksPage() {
     if (!selectedBook) return message.warning("Vui lòng chọn sách từ danh sách gợi ý");
     if (!quantity || quantity <= 0) return message.warning("Vui lòng nhập số lượng hợp lệ");
     if (!importPrice || importPrice <= 0) return message.warning("Vui lòng nhập giá nhập hợp lệ");
+    if (!selectedBook.volume) return message.warning("Vui lòng chọn tập sách");
 
     const newItem = {
       key: `${selectedBook._id}-${Date.now()}`,
@@ -183,6 +184,7 @@ export default function ImportBooksPage() {
           book: item._id,
           quantity: item.quantity,
           importPrice: item.importPrice,
+          volume: item.volume,
           total: item.quantity * item.importPrice,
         })),
       });
@@ -247,10 +249,10 @@ export default function ImportBooksPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#fafafa] p-8">
+     <div className="min-h-screen bg-[#fafafa]">
       <div className="max-w-[100%] mx-auto space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+       <div className="flex items-center justify-between mb-2">
           <Button
             type="text"
             icon={<ArrowLeftOutlined />}
@@ -275,14 +277,14 @@ export default function ImportBooksPage() {
             />
             {selectedBook && (
               <Card>
-                <Text strong>{selectedBook.title}</Text> - {selectedBook.volume || "Tập đơn"}
+                <Text strong>{selectedBook.title}</Text> - Tập {selectedBook.volume || "Tập đơn"}
                 <div className="mt-2 grid grid-cols-2 gap-4">
                   <div>
                     <Text>Số lượng</Text>
                     <InputNumber min={1} value={quantity} onChange={setQuantity} className="w-full" />
                   </div>
                   <div>
-                    <Text>Giá nhập (₫)</Text>
+                    <Text>Giá nhập(1) (₫) </Text>
                     <InputNumber
                       min={0}
                       value={importPrice}
