@@ -184,7 +184,7 @@ function Login() {
           <div className="mt-8 text-center">
             <p className="text-sm text-gray-600">
               Chưa có tài khoản?{" "}
-              <a href="#" className="font-medium text-blue-600 hover:text-blue-500">
+              <a href="https://zalo.me/0946280159" className="font-medium text-blue-600 hover:text-blue-500">
                 Liên hệ quản trị viên
               </a>
             </p>
