@@ -102,15 +102,15 @@ export default function Footer() {
             <div className="space-y-3">
               <div className="flex items-center space-x-3">
                 <MapPin className="w-4 h-4 text-blue-400 flex-shrink-0" />
-                <span className="text-gray-300 text-sm">04 Nguyễn Văn Bảo, P1, Gò Vấp</span>
+                <span className="text-gray-300 text-sm">55/30 Đường số 7, Phường 7, Quận Gò Vấp, TP.HCM</span>
               </div>
               <div className="flex items-center space-x-3">
                 <Phone className="w-4 h-4 text-blue-400 flex-shrink-0" />
-                <span className="text-gray-300 text-sm">(076) 1234 5678</span>
+                <span className="text-gray-300 text-sm">(094) 6280 159</span>
               </div>
               <div className="flex items-center space-x-3">
                 <Mail className="w-4 h-4 text-blue-400 flex-shrink-0" />
-                <span className="text-gray-300 text-sm">baokhanh@gmail.com</span>
+                <span className="text-gray-300 text-sm">ltranbaokhanh@gmail.com</span>
               </div>
             </div>
           </div>
