@@ -8,21 +8,32 @@ import Employees from "./pages/Employees"
 // import Payroll from "./pages/Payroll"
 import PayrollCalculate from "./pages/PayrollCalculate"
 import Departments from "./pages/Departments"
-import Settings from "./pages/Settings"
+// import Settings from "./pages/Settings"
 import Login from "./pages/Login"
 // import EmployeeLogin from "./pages/EmployeeLogin"
 // import EmployeeDashboard from "./pages/EmployeeDashboard"
 import ForgotPassword from "./pages/ForgotPassword"
 import ResetPassword from "./pages/ResetPassword"
 import { setAuthToken } from "./utils/auth"
-import AddBookPage from "./pages/AddBookPage"
 import WarehousePage from "./pages/WarehousePage"
 import CustomerPage from "./pages/CustomerPage"
 import Customers from "./pages/CustomerPage"
 import Inventory from "./pages/Inventory"
 import ImportGoods from "./pages/ImportGoods"
-import DetailOrders from "./pages/DetailOrders"
+import DetailOrders from "./pages/orders/DetailOrders"
 import RevenueDashboard from "./pages/ThongKe"
+import BookManagementPage from "./pages/BookManagementPage"
+import ImportBooksPage from "./pages/khohang/ImportBookPage"
+import BookInventoryPage from "./pages/khohang/BookInventoryPage"
+import PromotionForm from "./pages/khuyenmai/PromotionForm"
+import WarehouseListPage from "./pages/khohang/WarehouseListPage"
+import OrderDetail from "./pages/orders/OrderDetail"
+import TransactionForm from "./pages/giaodich/TransactionForm"
+import ReturnDetailPage from "./pages/orders/ReturnDetailPage"
+import Profile from "./components/profile/Profile"
+import Settings from "./components/profile/Settings"
+
+
 
 // Bảo vệ route yêu cầu xác thực cho Admin
 const RequireAuth = ({ children }) => {
@@ -36,7 +47,7 @@ const RequireAuth = ({ children }) => {
   }
 
   // Kiểm tra quyền admin (nếu cần)
-  if (userRole !== "admin" && userRole !== "hr") {
+  if (userRole !== "admin" && userRole !== "employee") {
     return <Navigate to="/unauthorized" replace />
   }
 
@@ -116,15 +127,29 @@ function App() {
         >
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="employees" element={<Employees />} />
-          <Route path="addBookPage" element={<AddBookPage />} />
+    
           <Route path="customers" element={<Customers />} />
           <Route path="inventory" element={<Inventory />} />
           <Route path="import-goods" element={<ImportGoods />} />
           <Route path="orders" element={<DetailOrders />} />
+          <Route path="/orders/:id" element={<OrderDetail />} />
+
           <Route path="departments" element={<Departments />} />
-          <Route path="settings" element={<Settings />} />
+          <Route path="settingss" element={<Settings />} />
           
           <Route path="thong-ke" element={<RevenueDashboard />} />
+
+          <Route path="book-management" element={<BookManagementPage />} />
+      
+        <Route path="bookInventoryPage" element={<BookInventoryPage />} />
+        <Route path="importBookPage" element={<ImportBooksPage />} />
+
+             <Route path="promotionForm" element={<PromotionForm />} />
+             <Route path="warehouseListPage" element={<WarehouseListPage />} />
+         <Route path="transactionForm" element={<TransactionForm />} />
+             <Route path="/return-detail/:id" element={<ReturnDetailPage />} />
+               <Route path="/profile" element={<Profile />} />
+        {/* <Route path="/settings" element={<Settings />} /> */}
         </Route>
 
         {/* Route không tồn tại */}
