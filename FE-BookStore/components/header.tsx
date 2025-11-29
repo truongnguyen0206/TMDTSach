@@ -14,8 +14,9 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { useAuth } from "@/contexts/auth-context"
-// Import useCart hook to display cart items count
+
 import { useCart } from "@/contexts/cart-context"
+
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -42,21 +43,21 @@ export default function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <Link href="/" className="text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium">
+            <Link href="/" className="text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium p-2">
               Trang chủ
             </Link>
             <Link
               href="/products"
-              className="text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium"
+              className="text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium p-2"
             >
               Sản phẩm
             </Link>
-            <Link href="/blog" className="text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium">
+            <Link href="/blog" className="text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium p-2">
               Blog
             </Link>
             <Link
               href="/about"
-              className="text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium"
+              className="text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium p-2"
             >
               Giới thiệu
             </Link>
@@ -64,14 +65,14 @@ export default function Header() {
 
           {/* Search Bar */}
           <div className="hidden md:flex items-center flex-1 max-w-md mx-8">
-            <div className="relative w-full">
+            {/* <div className="relative w-full">
               <Input
                 type="text"
                 placeholder="Tìm kiếm sách..."
                 className="pl-10 pr-4 py-2 w-full border-gray-300 focus:border-blue-500 focus:ring-blue-500"
               />
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            </div>
+            </div> */}
           </div>
 
           {/* Right Actions */}

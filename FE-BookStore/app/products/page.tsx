@@ -1,16 +1,39 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useEffect, useMemo } from "react"
+import axios from "axios"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Search, Filter, Grid, List } from "lucide-react"
-import ProductCard from "@/components/product-card"
-import { products, categories, getProductsByCategory, type Product } from "@/lib/products-data"
 import { message } from "antd"
+import ProductCard from "@/components/product-card"
+
+interface Category {
+  _id: string
+  name: string
+}
+
+interface Product {
+  _id: string
+  title: string
+  author: string
+  ISSN: string
+  category: Category
+  price: number
+  stock: number
+  publishYear: number
+  pages: number
+  coverImage: string
+  description: string
+  volume?: string
+}
 
 export default function ProductsPage() {
+  const [products, setProducts] = useState<Product[]>([])
+  const [categories, setCategories] = useState<string[]>([])
+  const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("Tất cả")
   const [sortBy, setSortBy] = useState("default")
@@ -18,25 +41,55 @@ export default function ProductsPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 12
 
+
+const fetchBooks = async () => {
+  try {
+    setLoading(true);
+
+    const res = await axios.get("http://localhost:5000/api/books");
+    if (res.data && res.data.success) {
+      const books: Product[] = res.data.data || [];
+      setProducts(books);
+      // Lấy danh sách tên danh mục duy nhất - an toàn nếu category null/undefined
+      const uniqueCategories = Array.from(
+        new Set(
+          books.map((b: Product) => (b && b.category && b.category.name ? b.category.name : "Khác"))
+        )
+      );
+      setCategories(["Tất cả", ...uniqueCategories]);
+    } else {
+      setProducts(res.data.data || res.data || []);
+      setCategories([]);
+    }
+  } catch (error) {
+    console.error("Lỗi khi tải sách:", error);
+    message.error("Không thể tải danh sách sách.");
+  } finally {
+    setLoading(false);
+  }
+};
+
+  useEffect(() => {
+    fetchBooks()
+  }, [])
+
   const filteredProducts = useMemo(() => {
     let result = products
 
-    // Filter by category
     if (selectedCategory !== "Tất cả") {
-      result = getProductsByCategory(selectedCategory)
+      result = result.filter((product) => product.category?.name === selectedCategory)
     }
 
-    // Filter by search query
     if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase()
       result = result.filter(
         (product) =>
-          product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          product.author.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          product.tags.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase())),
+          product.title.toLowerCase().includes(query) ||
+          product.author.toLowerCase().includes(query) ||
+          product.category?.name.toLowerCase().includes(query),
       )
     }
 
-    // Sort products
     switch (sortBy) {
       case "price-low":
         result = [...result].sort((a, b) => a.price - b.price)
@@ -44,34 +97,28 @@ export default function ProductsPage() {
       case "price-high":
         result = [...result].sort((a, b) => b.price - a.price)
         break
-      case "rating":
-        result = [...result].sort((a, b) => b.rating - a.rating)
-        break
       case "newest":
         result = [...result].sort((a, b) => b.publishYear - a.publishYear)
-        break
-      case "popular":
-        result = [...result].sort((a, b) => b.reviews - a.reviews)
         break
       default:
         break
     }
 
     return result
-  }, [searchQuery, selectedCategory, sortBy])
+  }, [products, searchQuery, selectedCategory, sortBy])
 
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage)
   const paginatedProducts = filteredProducts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
-
-  const handleAddToCart = (product: Product) => {
-    message.success(`Đã thêm "${product.title}" vào giỏ hàng!`)
-  }
 
   const handleClearFilters = () => {
     setSearchQuery("")
     setSelectedCategory("Tất cả")
     setSortBy("default")
     setCurrentPage(1)
+  }
+
+  if (loading) {
+    return <div className="text-center py-12 text-gray-500 text-lg">Đang tải dữ liệu sách...</div>
   }
 
   return (
@@ -102,6 +149,7 @@ export default function ProductsPage() {
               <SelectValue placeholder="Chọn danh mục" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="Tất cả"></SelectItem>
               {categories.map((category) => (
                 <SelectItem key={category} value={category}>
                   {category}
@@ -119,9 +167,7 @@ export default function ProductsPage() {
               <SelectItem value="default">Mặc định</SelectItem>
               <SelectItem value="price-low">Giá thấp đến cao</SelectItem>
               <SelectItem value="price-high">Giá cao đến thấp</SelectItem>
-              <SelectItem value="rating">Đánh giá cao nhất</SelectItem>
               <SelectItem value="newest">Mới nhất</SelectItem>
-              <SelectItem value="popular">Phổ biến nhất</SelectItem>
             </SelectContent>
           </Select>
 
@@ -192,7 +238,7 @@ export default function ProductsPage() {
           }
         >
           {paginatedProducts.map((product) => (
-            <ProductCard key={product.id} product={product} onAddToCart={handleAddToCart} />
+            <ProductCard key={product._id} product={product} />
           ))}
         </div>
       ) : (
