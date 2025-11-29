@@ -17,9 +17,9 @@ exports.getAttendances = asyncHandler(async (req, res, next) => {
 exports.getAttendance = asyncHandler(async (req, res, next) => {
   const attendance = await Attendance.findById(req.params.id).populate({
     path: "employee",
-    select: "firstName lastName employeeId position department",
+    select: "firstName lastName employeeId position",
     populate: {
-      path: "department",
+      // path: "department",
       select: "name",
     },
   })
@@ -248,43 +248,27 @@ exports.clockOut = asyncHandler(async (req, res, next) => {
 // @desc    Lấy báo cáo chấm công theo khoảng thời gian
 // @route   GET /api/attendance/report
 // @access  Private/Admin
+
 exports.getAttendanceReport = asyncHandler(async (req, res, next) => {
-  const { startDate, endDate, department, employee } = req.query
+  // Lấy ngày bắt đầu và kết thúc từ query params, mặc định là tháng hiện tại
+  const { startDate, endDate } = req.query;
 
-  // Xây dựng query
-  const query = {}
-
+  // Xây dựng bộ lọc
+  let filter = {};
   if (startDate && endDate) {
-    query.date = {
+    filter.date = {
       $gte: new Date(startDate),
       $lte: new Date(endDate),
-    }
+    };
   }
 
-  if (employee) {
-    query.employee = employee
-  }
-
-  if (department) {
-    // Tìm tất cả nhân viên thuộc phòng ban
-    const employees = await Employee.find({ department })
-    query.employee = { $in: employees.map((emp) => emp._id) }
-  }
-
-  const attendances = await Attendance.find(query)
-    .populate({
-      path: "employee",
-      select: "firstName lastName employeeId position department",
-      populate: {
-        path: "department",
-        select: "name",
-      },
-    })
-    .sort({ date: -1 })
+  const report = await Attendance.find(filter)
+    .populate("employee", "firstName lastName employeeId")
+    .sort({ date: -1 });
 
   res.status(200).json({
     success: true,
-    count: attendances.length,
-    data: attendances,
-  })
-})
+    count: report.length,
+    data: report,
+  });
+});

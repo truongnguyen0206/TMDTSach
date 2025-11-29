@@ -47,6 +47,7 @@ exports.createEmployee = asyncHandler(async (req, res, next) => {
     user = await User.create({
       name: `${req.body.firstName} ${req.body.lastName}`,
       email: req.body.email,
+       phone: req.body.phone,
       password: req.body.password || "bookstore", // Mật khẩu mặc định
       role: req.body.role || "employee", 
     })
@@ -157,7 +158,7 @@ exports.updateEmployee = asyncHandler(async (req, res, next) => {
       employeeId: employee.employeeId,
       name: `${employee.firstName} ${employee.lastName}`,
       position: employee.position,
-      department: employee.department,
+      // department: employee.department,
     },
   })
 
@@ -213,3 +214,20 @@ exports.deleteEmployee = asyncHandler(async (req, res, next) => {
     data: employee,
   })
 })
+
+// Lấy thông tin nhân viên theo userId
+exports.getEmployeeByUserId = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const employee = await Employee.findOne({ user: userId });
+
+    if (!employee) {
+      return res.status(404).json({ success: false, message: "Không tìm thấy nhân viên cho user này." });
+    }
+
+    res.status(200).json({ success: true, data: employee });
+  } catch (error) {
+    console.error("Lỗi khi lấy thông tin nhân viên:", error);
+    res.status(500).json({ success: false, message: "Lỗi server.", error: error.message });
+  }
+};

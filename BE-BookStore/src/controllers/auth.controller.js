@@ -48,14 +48,14 @@ exports.login = asyncHandler(async (req, res, next) => {
   // Lấy thông tin nhân viên nếu là nhân viên
   let employeeData = null
   if (user.role === "employee") {
-    const employee = await Employee.findOne({ user: user._id }).populate("department", "name")
+    const employee = await Employee.findOne({ user: user._id })
     if (employee) {
       employeeData = {
         id: employee._id,
         employeeId: employee.employeeId,
         fullName: `${employee.firstName} ${employee.lastName}`,
         position: employee.position,
-        department: employee.department ? employee.department.name : "",
+        // department: employee.department ? employee.department.name : "",
         avatar: employee.avatar,
       }
     }
@@ -63,30 +63,6 @@ exports.login = asyncHandler(async (req, res, next) => {
 
   sendTokenResponse(user, 200, res, employeeData)
 })
-
-// @desc    Đăng ký người dùng
-// @route   POST /api/auth/register
-// @access  Public
-exports.register = asyncHandler(async (req, res, next) => {
-  const { name, email, password } = req.body;
-
-  // Kiểm tra xem email đã tồn tại chưa
-  const userExists = await User.findOne({ email });
-
-  if (userExists) {
-    return next(new ErrorResponse("Email đã được sử dụng", 400));
-  }
-
-  // Tạo người dùng mới
-  const user = await User.create({
-    name,
-    email,
-    password,
-  });
-
-  // Gửi token về cho client để tự động đăng nhập sau khi đăng ký
-  sendTokenResponse(user, 201, res);
-});
 
 // @desc    Đăng xuất người dùng / xóa cookie
 // @route   GET /api/auth/logout
@@ -112,14 +88,14 @@ exports.getMe = asyncHandler(async (req, res, next) => {
   // Lấy thông tin nhân viên nếu là nhân viên
   let employeeData = null
   if (user.role === "employee") {
-    const employee = await Employee.findOne({ user: user._id }).populate("department", "name")
+    const employee = await Employee.findOne({ user: user._id })
     if (employee) {
       employeeData = {
         id: employee._id,
         employeeId: employee.employeeId,
         fullName: `${employee.firstName} ${employee.lastName}`,
         position: employee.position,
-        department: employee.department ? employee.department.name : "",
+        // department: employee.department ? employee.department.name : "",
         avatar: employee.avatar,
       }
     }

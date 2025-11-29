@@ -14,6 +14,16 @@ const transactionRoutes = require("./src/routes/transaction.routes")
 const payrollRoutes = require("./src/routes/payroll.routes")
 const attendanceRoutes = require("./src/routes/attendance.routes")
 const customerRoutes = require("./src/routes/customer.routes")
+const bookRoutes = require("./src/routes/book.routes")
+const categoryRoutes = require("./src/routes/category.routes")
+const warehouseRoutes = require("./src/routes/warehouse.routes");
+const employeesRoutes = require("./src/routes/employees.router");
+const orderRoutes = require("./src/routes/order.routes");
+const promotionRoutes = require("./src/routes/promotionRoutes")
+const paymentRoutes = require("./src/routes/paymentRoutes");
+const statisticsRoutes = require("./src/routes/statistics.router");
+const TransactionBookRoutes = require("./src/routes/transactionBook.routes")
+const returnRoutes = require("./src/routes/returnRoutes")
 // Cấu hình dotenv
 dotenv.config()
 
@@ -26,10 +36,11 @@ const app = express()
 // Cấu hình CORS - cho phép frontend truy cập
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://127.0.0.1:5173" , "http://localhost:3000"],
+    origin: ["http://localhost:5173", "http://127.0.0.1:5173" , "http://localhost:3000","http://localhost:3001"],
     credentials: true, // Cho phép gửi cookie qua CORS
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
+  
   }),
 )
  
@@ -55,6 +66,16 @@ app.use("/api/transactions", transactionRoutes)
 app.use("/api/payrolls", payrollRoutes)
 app.use("/api/attendance", attendanceRoutes)
 app.use("/api/customer", customerRoutes)
+app.use("/api/books", bookRoutes)
+app.use("/api/categories", categoryRoutes)
+app.use("/api/warehouse", warehouseRoutes);
+app.use("/api/employeesID", employeesRoutes)
+app.use("/api/orders", orderRoutes)
+app.use("/api/promotions", promotionRoutes)
+app.use("/api/payment", paymentRoutes);
+app.use("/api/statistics", statisticsRoutes);
+app.use("/api/transactionBook",TransactionBookRoutes)
+app.use("/api/returns", returnRoutes);
 
 // Route mặc định
 app.get("/", (req, res) => res.send("🩺 HRIS API is running"))
