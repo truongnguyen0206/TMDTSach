@@ -1,7 +1,6 @@
 const express = require("express")
 const {
   login,
-  register,
   logout,
   getMe,
   forgotPassword,
@@ -15,12 +14,11 @@ const router = express.Router()
 const { protect } = require("../middleware/auth.middleware")
 
 router.post("/login", login)
-router.post("/register", register)
 router.get("/logout", logout)
 router.get("/me", protect, getMe)
 router.post("/forgotpassword", forgotPassword)
 // router.put("/resetpassword/:resettoken", resetPassword)
 router.put("/updatedetails", protect, updateDetails)
-router.put("/updatepassword", protect, updatePassword)
+router.post("/updatepassword", protect, updatePassword)
 
 module.exports = router

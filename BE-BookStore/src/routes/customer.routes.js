@@ -1,19 +1,32 @@
-const express = require("express")
-const router = express.Router()
+const express = require("express");
+const router = express.Router();
 const {
-  registerCustomer,
+  sendOtpForRegistration,
+  verifyOtpAndRegister,
   loginCustomer,
-  getCustomers,
-  getCustomer,
-} = require("../controllers/customer.controller")
-const { protect } = require("../middleware/auth.middleware")
+  addAddress,
+  getActiveAddresses,
+  updateAddress,
+  softDeleteAddress,
+  getCustomerByUserId,
+  getAllCustomers,
+} = require("../controllers/customer.controller");
 
-// Đăng ký + đăng nhập
-router.post("/register", registerCustomer)
-router.post("/login", loginCustomer)
+router.post("/send-otp", sendOtpForRegistration);      // Bước 1: gửi OTP
+router.post("/verify-otp", verifyOtpAndRegister);       // Bước 2: xác thực OTP
+router.post("/login", loginCustomer);                  // Đăng nhập
+// 🔹 Thêm địa chỉ mới
+router.post("/add-address", addAddress)
 
-// Quản lý khách hàng (yêu cầu đăng nhập admin/hr)
-router.get("/", protect, getCustomers)
-router.get("/:id", protect, getCustomer)
+// 🔹 Lấy danh sách địa chỉ chưa bị ẩn
+router.get("/addresses/:customerId",getActiveAddresses)
 
-module.exports = router
+// 🔹 Cập nhật địa chỉ
+router.put("/update-address", updateAddress)
+
+// 🔹 Xóa địa chỉ (soft delete)
+router.put("/soft-delete-address", softDeleteAddress)
+//lấy customer theo id của user 
+router.get("/user/:userId", getCustomerByUserId)
+router.get("/", getAllCustomers)
+module.exports = router;
