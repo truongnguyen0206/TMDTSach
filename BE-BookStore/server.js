@@ -78,7 +78,7 @@ app.use("/api/transactionBook",TransactionBookRoutes)
 app.use("/api/returns", returnRoutes);
 
 // Route mặc định
-app.get("/", (req, res) => res.send("🩺 HRIS API is running"))
+app.get("/", (req, res) => res.send("API is running"))
 
 // Middleware xử lý lỗi
 app.use(errorHandler)
