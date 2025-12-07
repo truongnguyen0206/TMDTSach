@@ -112,7 +112,7 @@ function Dashboard() {
             <Receipt className="h-4 w-4 text-gray-400" />
           </div>
           <div className="text-2xl font-bold">
-            {totalRevenue.toLocaleString("vi-VN")}
+            {totalRevenue.toLocaleString("vi-VN")}₫
           </div>
           {/* <p className="text-xs text-gray-500">+5% so với tháng trước</p> */}
         </Card>
