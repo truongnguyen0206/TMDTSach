@@ -28,15 +28,15 @@ const getBotResponse = (userMessage: string): string => {
   }
 
   if (includesAny(lowerMessage, ["giao hàng", "ship", "vận chuyển", "phí ship"])) {
-    return "BookStore giao hàng toàn quốc. Thời gian giao từ 2-5 ngày tuỳ khu vực, phí ship được tính tự động ở bước thanh toán."
+    return "KT.BookStore giao hàng toàn quốc. Thời gian giao từ 2-5 ngày tuỳ khu vực, phí ship được tính tự động ở bước thanh toán."
   }
 
   if (includesAny(lowerMessage, ["thanh toán", "chuyển khoản", "cod"])) {
-    return "Hiện BookStore hỗ trợ: \n- Thanh toán khi nhận hàng (COD)\n- Chuyển khoản ngân hàng."
+    return "Hiện KT.BookStore hỗ trợ: \n- Thanh toán khi nhận hàng (COD)\n- Chuyển khoản ngân hàng."
   }
 
   if (includesAny(lowerMessage, ["đổi trả", "hoàn trả", "hoàn tiền", "bị lỗi", "bị hỏng"])) {
-    return "BookStore hỗ trợ đổi trả trong 7 ngày kể từ khi nhận hàng nếu sản phẩm bị lỗi từ nhà sản xuất hoặc giao nhầm. Bạn giữ lại hoá đơn và tình trạng sách còn tương đối nguyên nhé."
+    return "KT.BookStore hỗ trợ đổi trả trong 7 ngày kể từ khi nhận hàng nếu sản phẩm bị lỗi từ nhà sản xuất hoặc giao nhầm. Bạn giữ lại hoá đơn và tình trạng sách còn tương đối nguyên nhé."
   }
 
   if (includesAny(lowerMessage, ["tư vấn sách", "gợi ý sách", "recommend", "nên đọc gì", "sách hay"])) {
@@ -60,7 +60,7 @@ const getBotResponse = (userMessage: string): string => {
   }
 
   if (includesAny(lowerMessage, ["giờ mở cửa", "giờ làm việc", "mở cửa lúc mấy giờ"])) {
-    return "Nhà sách BookStore (online) mở 24/7, đặt lúc nào cũng được."
+    return "Nhà sách KT.BookStore (online) mở 24/7, đặt lúc nào cũng được."
   }
 
   if (includesAny(lowerMessage, ["địa chỉ", "ở đâu", "chi nhánh", "cửa hàng"])) {
@@ -68,10 +68,10 @@ const getBotResponse = (userMessage: string): string => {
   }
 
   if (includesAny(lowerMessage, ["liên hệ", "hỗ trợ", "cần giúp", "tư vấn"])) {
-    return "Bạn có thể liên hệ BookStore qua hotline: 0946280159 hoặc email: ltranbaokhanh@gmail.com. Đội ngũ chăm sóc khách hàng sẽ hỗ trợ bạn trong giờ hành chính."
+    return "Bạn có thể liên hệ KT.BookStore qua hotline: 0946280159 hoặc email: ltranbaokhanh@gmail.com. Đội ngũ chăm sóc khách hàng sẽ hỗ trợ bạn trong giờ hành chính."
   }
 
-  return "Cảm ơn bạn đã nhắn cho BookStore! Với các yêu cầu chi tiết hơn, bạn có thể gọi hotline: 0946280159 hoặc email: ltranbaokhanh@gmail.com"
+  return "Cảm ơn bạn đã nhắn cho KT.BookStore! Với các yêu cầu chi tiết hơn, bạn có thể gọi hotline: 0946280159 hoặc email: ltranbaokhanh@gmail.com"
 }
 
 export default function ChatSupport() {
@@ -79,7 +79,7 @@ export default function ChatSupport() {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: "1",
-      text: "Xin chào! Tôi là trợ lý ảo của BookStore. Tôi có thể giúp gì cho bạn?",
+      text: "Xin chào! Tôi là trợ lý ảo của KT.BookStore. Tôi có thể giúp gì cho bạn?",
       sender: "bot",
       timestamp: new Date(),
     },
