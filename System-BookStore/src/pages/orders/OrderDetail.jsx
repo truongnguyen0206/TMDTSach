@@ -480,7 +480,7 @@ const handleRejectOrder = async () => {
 
                 {/* Tên cửa hàng */}
                 <h2 className="text-center text-xl font-bold">KT.BookStore</h2>
-                <p className="text-center text-sm">04 - Nguyễn Văn Bảo</p>
+                <p className="text-center text-sm">55/30 Đường số 7, Phường 7, Quận Gò Vấp, TP.HCM</p>
 
                 {/* Tiêu đề */}
                 <h3 className="text-center text-lg font-semibold mt-4">HOÁ ĐƠN</h3>
