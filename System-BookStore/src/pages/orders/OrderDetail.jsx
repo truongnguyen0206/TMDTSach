@@ -547,15 +547,15 @@ const handleRejectOrder = async () => {
                 </div>
 
                 {/* Thanh toán */}
-                <div className="flex justify-between mt-4 font-semibold">
+                {/* <div className="flex justify-between mt-4 font-semibold">
                   <span>Cần phải thu</span>
                   <span>{formatCurrency(order.total)}</span>
-                </div>
+                </div> */}
 
                 {/* Ghi chú */}
-                <p className="text-center text-xs mt-5">
+                {/* <p className="text-center text-xs mt-5">
                   Vui lòng kiểm tra kỹ lại nội dung trước khi thanh toán!
-                </p>
+                </p> */}
               </div>
 
             {/* Order info */}
