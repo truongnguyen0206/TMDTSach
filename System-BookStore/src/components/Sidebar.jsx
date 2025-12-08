@@ -108,7 +108,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen }) {
           <div className="border-b px-6 py-4">
             <NavLink to="/dashboard" className="flex items-center gap-2 font-semibold">
               <Building className="h-6 w-6 text-blue-600" />
-              <span className="text-xl">Book Store</span>
+              <span className="text-xl">KT.BookStore</span>
             </NavLink>
           </div>
           <div className="flex-1 overflow-auto py-2">

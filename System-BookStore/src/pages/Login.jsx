@@ -79,7 +79,7 @@ function Login() {
           </div>
         </div>
         <div className="p-12 text-white">
-          <h1 className="text-4xl font-bold mb-6">Hệ thống Quản lý Book</h1>
+          <h1 className="text-4xl font-bold mb-6">Hệ thống Quản lý KT.BookStore</h1>
           <p className="text-lg opacity-80">Giải pháp toàn diện giúp doanh nghiệp, quản lý bán sách hiệu quả.</p>
         </div>
         <div className="p-12 text-blue-100 text-sm">© 2025 KT.BookStore.</div>

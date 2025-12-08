@@ -134,7 +134,7 @@ const BookManagementPage = () => {
             setSearch(e.target.value);
             setCurrentPage(1);
           }}
-          placeholder="🔍 Tìm kiếm theo tên, tác giả, ISSN, thể loại..."
+          placeholder="🔍 Tìm kiếm theo tên, tác giả, ISBN, thể loại..."
           className="w-full border rounded-md px-4 py-2 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400"
         />
 
