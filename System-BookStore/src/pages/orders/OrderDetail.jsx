@@ -382,8 +382,8 @@ const handleRejectOrder = async () => {
                 </button>
               )}
 
-              {/* Xuất hoá đơn PDF, chỉ khi đã giao */}
-              {order.status === "delivered" && (
+              {/* Xuất hoá đơn PDF, chỉ khi chuẩn bị */}
+              {order.status === "processing" && (
                 <button
                   onClick={exportInvoicePDF}
                   className="flex items-center gap-2 bg-white border hover:shadow-md px-4 py-2 rounded-md"
