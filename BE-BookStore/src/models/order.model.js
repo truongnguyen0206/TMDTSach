@@ -39,7 +39,7 @@ const OrderSchema = new mongoose.Schema(
       ward: { type: String, required: true },
       district: { type: String, required: true },
       city: { type: String, required: true },
-      notes: { type: String },
+      notes: { type: String , default :"Không"},
     },
 
     // Thanh toán & tổng tiền
@@ -58,7 +58,7 @@ const OrderSchema = new mongoose.Schema(
     // Trạng thái đơn hàng
     status: {
       type: String,
-      enum: ["pending", "processing", "shipping", "delivered", "cancelled","yeu_cau_hoan_tra","paid","completed"],
+      enum: ["pending", "processing", "shipping", "delivered", "cancelled","yeu_cau_hoan_tra","paid","completed","tuchoi","huydonhang"],
       default: "pending",
     },
     // Lịch sử cập nhật trạng thái
@@ -70,7 +70,7 @@ const OrderSchema = new mongoose.Schema(
         updatedAt: { type: Date, default: Date.now },
       },
     ],
-
+ 
     isDeleted: { type: Boolean, default: false },
   },
   { timestamps: true }
