@@ -2,9 +2,9 @@
 
 import type React from "react"
 
-import { useState, useRef, useEffect } from "react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
 import { MessageCircle, X, Send, User, Bot } from "lucide-react"
 
@@ -15,87 +15,18 @@ interface ChatMessage {
   timestamp: Date
 }
 
-// ==== BOT LOGIC ====
-const includesAny = (text: string, keywords: string[]) => {
-  return keywords.some((k) => text.includes(k))
-}
-
-const getBotResponse = (userMessage: string): string => {
-  const lowerMessage = userMessage.toLowerCase().trim()
-
-  if (includesAny(lowerMessage, ["giá", "tiền", "bao nhiêu", "đắt", "rẻ"])) {
-    return "Bạn có thể xem giá chi tiết trên từng trang sản phẩm. BookStore thường xuyên có khuyến mãi, bạn nhớ để ý mục 'Khuyến mãi' trong giỏ hàng khi thêm sản phẩm vào nhé!"
-  }
-
-  if (includesAny(lowerMessage, ["giao hàng", "ship", "vận chuyển", "phí ship"])) {
-    return "KT.BookStore giao hàng toàn quốc. Thời gian giao từ 2-5 ngày tuỳ khu vực, phí ship được tính tự động ở bước thanh toán."
-  }
-
-  if (includesAny(lowerMessage, ["thanh toán", "chuyển khoản", "cod"])) {
-    return "Hiện KT.BookStore hỗ trợ: \n- Thanh toán khi nhận hàng (COD)\n- Chuyển khoản ngân hàng."
-  }
-
-  if (includesAny(lowerMessage, ["đổi trả", "hoàn trả", "hoàn tiền", "bị lỗi", "bị hỏng"])) {
-    return "KT.BookStore hỗ trợ đổi trả trong 7 ngày kể từ khi nhận hàng nếu sản phẩm bị lỗi từ nhà sản xuất hoặc giao nhầm. Bạn giữ lại hoá đơn và tình trạng sách còn tương đối nguyên nhé."
-  }
-
-  if (includesAny(lowerMessage, ["tư vấn sách", "gợi ý sách", "recommend", "nên đọc gì", "sách hay"])) {
-    return "Bạn có thể cho mình biết thêm: bạn thích thể loại nào (ví dụ: kỹ năng sống, thiếu nhi, kinh tế, tiểu thuyết, manga,...)? Hiện tại bạn có thể xem mục 'Sách nổi bật' và 'Bảng xếp hạng sách bán chạy' trên trang chủ để tham khảo nhanh."
-  }
-
-  if (includesAny(lowerMessage, ["tìm sách", "tìm kiếm", "search", "tên sách", "tác giả"])) {
-    return "Để tìm sách, bạn nhập tên sách hoặc tên tác giả trong mục 'Sản phẩm' ở đầu trang. Bạn cũng có thể lọc theo thể loại, giá."
-  }
-
-  if (includesAny(lowerMessage, ["trạng thái đơn", "đơn hàng của tôi", "kiểm tra đơn", "đơn mua", "đang giao"])) {
-    return "Bạn có thể xem trạng thái đơn hàng trong mục 'Lịch sử đơn hàng' sau khi đăng nhập. Nếu cần hỗ trợ gấp, bạn gửi mã đơn cho mình qua hotline hoặc email nhé."
-  }
-
-  if (includesAny(lowerMessage, ["huỷ đơn", "cancel", "huỷ đặt hàng"])) {
-    return "Nếu đơn hàng của bạn chưa được xác nhận, BookStore có thể hỗ trợ huỷ đơn. Bạn có thể hủy đơn hàng ở phần 'Lịch sử mua hàng' trong mục 'Thông tin cá nhân' hoặc vui lòng liên hệ hotline để được xử lý nhanh nhất."
-  }
-
-  if (includesAny(lowerMessage, ["đăng nhập", "đăng ký", "quên mật khẩu", "tài khoản"])) {
-    return "Bạn có thể đăng ký hoặc đăng nhập bằng email/số điện thoại. Nếu quên mật khẩu, hãy dùng chức năng 'Quên mật khẩu' và làm theo hướng dẫn để lấy lại mật khẩu."
-  }
-
-  if (includesAny(lowerMessage, ["giờ mở cửa", "giờ làm việc", "mở cửa lúc mấy giờ"])) {
-    return "Nhà sách KT.BookStore (online) mở 24/7, đặt lúc nào cũng được."
-  }
-
-  if (includesAny(lowerMessage, ["địa chỉ", "ở đâu", "chi nhánh", "cửa hàng"])) {
-    return "Bạn có thể xem địa chỉ cụ thể ở mục 'Thông tin liên hệ' ở cuối trang."
-  }
-
-  if (includesAny(lowerMessage, ["liên hệ", "hỗ trợ", "cần giúp", "tư vấn"])) {
-    return "Bạn có thể liên hệ KT.BookStore qua hotline: 0946280159 hoặc email: ltranbaokhanh@gmail.com. Đội ngũ chăm sóc khách hàng sẽ hỗ trợ bạn trong giờ hành chính."
-  }
-
-  return "Cảm ơn bạn đã nhắn cho KT.BookStore! Với các yêu cầu chi tiết hơn, bạn có thể gọi hotline: 0946280159 hoặc email: ltranbaokhanh@gmail.com"
-}
-
 export default function ChatSupport() {
   const [isOpen, setIsOpen] = useState(false)
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: "1",
-      text: "Xin chào! Tôi là trợ lý ảo của KT.BookStore. Tôi có thể giúp gì cho bạn?",
+      text: "Xin chào! Tôi là trợ lý ảo của BookStore. Tôi có thể giúp gì cho bạn?",
       sender: "bot",
       timestamp: new Date(),
     },
   ])
   const [inputMessage, setInputMessage] = useState("")
   const [isTyping, setIsTyping] = useState(false)
-
-  // ref dùng để auto scroll xuống cuối
-  const messagesEndRef = useRef<HTMLDivElement | null>(null)
-
-  // mỗi khi messages thay đổi -> scroll tới cuối
-  useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" })
-    }
-  }, [messages])
 
   const handleSendMessage = () => {
     if (!inputMessage.trim()) return
@@ -111,6 +42,7 @@ export default function ChatSupport() {
     setInputMessage("")
     setIsTyping(true)
 
+    // Simulate bot response
     setTimeout(() => {
       const botResponse: ChatMessage = {
         id: (Date.now() + 1).toString(),
@@ -123,6 +55,28 @@ export default function ChatSupport() {
     }, 1500)
   }
 
+  const getBotResponse = (userMessage: string): string => {
+    const lowerMessage = userMessage.toLowerCase()
+
+    if (lowerMessage.includes("giá") || lowerMessage.includes("tiền")) {
+      return "Bạn có thể xem giá của từng sản phẩm trên trang chi tiết. Chúng tôi thường xuyên có các chương trình khuyến mãi đặc biệt!"
+    }
+    if (lowerMessage.includes("giao hàng") || lowerMessage.includes("ship")) {
+      return "Chúng tôi hỗ trợ giao hàng toàn quốc. Thời gian giao hàng từ 2-5 ngày tùy theo khu vực. Phí ship được tính tự động khi thanh toán."
+    }
+    if (lowerMessage.includes("thanh toán")) {
+      return "Chúng tôi hỗ trợ 2 phương thức thanh toán: Thanh toán khi nhận hàng (COD) và Chuyển khoản ngân hàng."
+    }
+    if (lowerMessage.includes("đổi trả") || lowerMessage.includes("hoàn trả")) {
+      return "Chúng tôi hỗ trợ đổi trả trong vòng 7 ngày kể từ ngày nhận hàng với điều kiện sản phẩm còn nguyên vẹn."
+    }
+    if (lowerMessage.includes("bộ sách") || lowerMessage.includes("harry potter")) {
+      return "Bộ sách Harry Potter có 7 tập. Bạn có thể mua cả bộ để tiết kiệm hoặc mua từng cuốn riêng lẻ theo nhu cầu."
+    }
+
+    return "Cảm ơn bạn đã liên hệ! Để được hỗ trợ tốt nhất, bạn có thể gọi hotline: 0123456789 hoặc email: baokhanh12@gmail.com"
+  }
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault()
@@ -132,7 +86,7 @@ export default function ChatSupport() {
 
   return (
     <>
-      {/* Nút chat nổi */}
+      {/* Floating Chat Button */}
       <div className="fixed bottom-6 right-6 z-50">
         {!isOpen && (
           <Button
@@ -145,11 +99,11 @@ export default function ChatSupport() {
         )}
       </div>
 
-      {/* Cửa sổ chat */}
+      {/* Chat Window */}
       {isOpen && (
-        <div className="fixed bottom-6 right-6 z-50 w-80">
-          <Card className="bg-white rounded-lg shadow-2xl border overflow-hidden flex flex-col">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-blue-600 text-white">
+        <div className="fixed bottom-6 right-6 z-50 w-80 h-96 bg-white rounded-lg shadow-2xl border">
+          <Card className="h-full flex flex-col">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-blue-600 text-white rounded-t-lg">
               <CardTitle className="text-lg font-semibold">Hỗ trợ khách hàng</CardTitle>
               <Button
                 variant="ghost"
@@ -161,28 +115,18 @@ export default function ChatSupport() {
               </Button>
             </CardHeader>
 
-            {/* BODY */}
-            <div className="flex flex-col">
-              {/* Vùng tin nhắn: giới hạn chiều cao + thanh cuộn */}
-              <div className="max-h-64 overflow-y-auto p-4 pr-2 space-y-4">
+            <CardContent className="flex-1 flex flex-col p-0">
+              {/* Messages */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-4">
                 {messages.map((msg) => (
-                  <div
-                    key={msg.id}
-                    className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
-                  >
+                  <div key={msg.id} className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}>
                     <div
-                      className={`max-w-[80%] p-3 rounded-lg break-words ${
-                        msg.sender === "user"
-                          ? "bg-blue-600 text-white"
-                          : "bg-gray-100 text-gray-900"
+                      className={`max-w-[80%] p-3 rounded-lg ${
+                        msg.sender === "user" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-900"
                       }`}
                     >
                       <div className="flex items-center space-x-2 mb-1">
-                        {msg.sender === "user" ? (
-                          <User className="w-4 h-4" />
-                        ) : (
-                          <Bot className="w-4 h-4" />
-                        )}
+                        {msg.sender === "user" ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
                         <span className="text-xs opacity-75">
                           {msg.timestamp.toLocaleTimeString("vi-VN", {
                             hour: "2-digit",
@@ -190,9 +134,7 @@ export default function ChatSupport() {
                           })}
                         </span>
                       </div>
-                      <p className="text-sm leading-relaxed break-words whitespace-pre-wrap">
-                        {msg.text}
-                      </p>
+                      <p className="text-sm">{msg.text}</p>
                     </div>
                   </div>
                 ))}
@@ -203,27 +145,24 @@ export default function ChatSupport() {
                       <div className="flex items-center space-x-2">
                         <Bot className="w-4 h-4" />
                         <div className="flex space-x-1">
-                          <div className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" />
+                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
                           <div
-                            className="w-2 h-2 rounded-full bg-gray-400 animate-bounce"
+                            className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
                             style={{ animationDelay: "0.1s" }}
-                          />
+                          ></div>
                           <div
-                            className="w-2 h-2 rounded-full bg-gray-400 animate-bounce"
+                            className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
                             style={{ animationDelay: "0.2s" }}
-                          />
+                          ></div>
                         </div>
                       </div>
                     </div>
                   </div>
                 )}
-
-                {/* mốc để scroll tới cuối */}
-                <div ref={messagesEndRef} />
               </div>
 
-              {/* Ô nhập: luôn cố định phía dưới */}
-              <div className="p-4 border-t bg-white">
+              {/* Input */}
+              <div className="p-4 border-t">
                 <div className="flex space-x-2">
                   <Textarea
                     value={inputMessage}
@@ -243,7 +182,7 @@ export default function ChatSupport() {
                   </Button>
                 </div>
               </div>
-            </div>
+            </CardContent>
           </Card>
         </div>
       )}

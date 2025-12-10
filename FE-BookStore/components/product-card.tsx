@@ -37,20 +37,18 @@ export default function ProductCard({ product }: ProductCardProps) {
   const isOutOfStock = product.stock === 0
 
 const handleAddToCart = () => {
-
   addToCart(
     {
       id: product._id,
       title: product.title,
       price: product.price,
       coverImage: product.coverImage,
-      volume: product.volume || "",
-      stock: product.stock
+      volume: product.volume || ""
     },
     1
   )
 
-  // message.success(`Đã thêm "${product.title}" vào giỏ hàng!`)
+  message.success(`Đã thêm "${product.title}" vào giỏ hàng!`)
 }
 
 
