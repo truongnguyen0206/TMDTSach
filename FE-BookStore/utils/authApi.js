@@ -1,6 +1,6 @@
 import axios from "axios"
 
-const API_URL = "http://localhost:5000/api" // ⚙️ chỉnh port nếu BE khác
+const baseURL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 // Tự động gửi cookie khi cần
 axios.defaults.withCredentials = true
