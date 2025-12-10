@@ -40,7 +40,7 @@ const RETURN_REASONS = [
   { value: "Lý do khác", label: "Lý do khác" },
 ]
 
-export default function ReturnRequestPage() {
+function ReturnRequestContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const orderCode = searchParams.get("orderNumber")
@@ -328,5 +328,13 @@ export default function ReturnRequestPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function ReturnRequestPage() {
+  return (
+    <Suspense fallback={<div>Đang tải form yêu cầu...</div>}>
+      <ReturnRequestContent />
+    </Suspense>
   )
 }
