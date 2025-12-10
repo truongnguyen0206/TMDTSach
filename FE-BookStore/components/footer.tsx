@@ -18,14 +18,11 @@ export default function Footer() {
               Cửa hàng sách trực tuyến hàng đầu Việt Nam, cung cấp hàng ngàn đầu sách chất lượng với giá cả hợp lý.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="text-gray-400 hover:text-blue-400 transition-colors duration-200">
+              <a href="https://www.facebook.com/baokhanh.luutran.5/" className="text-gray-400 hover:text-blue-400 transition-colors duration-200">
                 <Facebook className="w-5 h-5" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-blue-400 transition-colors duration-200">
+              <a href="https://www.instagram.com/ltrbao.khanhh/" className="text-gray-400 hover:text-blue-400 transition-colors duration-200">
                 <Instagram className="w-5 h-5" />
-              </a>
-              <a href="#" className="text-gray-400 hover:text-blue-400 transition-colors duration-200">
-                <Twitter className="w-5 h-5" />
               </a>
             </div>
           </div>
