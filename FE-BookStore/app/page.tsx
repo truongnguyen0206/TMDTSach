@@ -129,7 +129,7 @@ export default function HomePage() {
         <PhoneOutlined style={{ fontSize: '24px', color: '#FF9800' }} /> {/* Ant Design Phone Icon */}
       </div>
       <div className="text-sm">
-        <h5 className="font-semibold">0123456789</h5>
+        <h5 className="font-semibold">0946280159</h5>
         <p className="text-xs">Liên hệ để được hỗ trợ</p>
       </div>
     </div>

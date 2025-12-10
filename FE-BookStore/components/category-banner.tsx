@@ -59,7 +59,7 @@ export default function CategoryBanner({ categories, products }: CategoryBannerP
   const currentProduct = categoryProducts[currentImageIndex] || categoryProducts[0]
 
   return (
-    <section className="bg-gradient-to-br from-gray-400 via-gray-500 to-gray-200 py-16 px-4 rounded-2xl overflow-hidden">
+    <section className="bg-gradient-to-br from-blue-400 via-blue-500 to-blue-200 py-16 px-4 rounded-2xl overflow-hidden">
       <div className="max-w-7xl mx-auto">
         {/* Category Navigation */}
         <div className="flex items-center justify-between mb-12">
