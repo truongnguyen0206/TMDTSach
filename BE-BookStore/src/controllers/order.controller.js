@@ -235,6 +235,18 @@ exports.updateOrderStatus = async (req, res) => {
 
     await order.save();
 
+    // Emit socket event cho realtime update
+    if (global.io) {
+      global.io.to(`order-${id}`).emit("order-status-updated", {
+        orderId: id,
+        orderCode: order.orderCode,
+        status: nextStatus,
+        statusHistory: order.statusHistory,
+        order: order
+      });
+      console.log(`🔔 Emitted order-status-updated for order ${id}`);
+    }
+
     return res.status(200).json({
       success: true,
       message: "Cập nhật trạng thái thành công!",
@@ -306,6 +318,18 @@ exports.rejectOrder = async (req, res) => {
     });
 
     await order.save();
+
+    // Emit socket event cho realtime update
+    if (global.io) {
+      global.io.to(`order-${id}`).emit("order-status-updated", {
+        orderId: id,
+        orderCode: order.orderCode,
+        status: "tuchoi",
+        statusHistory: order.statusHistory,
+        order: order
+      });
+      console.log(`🔔 Emitted order-status-updated (rejected) for order ${id}`);
+    }
 
     return res.status(200).json({
       success: true,

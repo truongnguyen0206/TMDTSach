@@ -32,6 +32,44 @@ connectDB()
 
 // Khởi tạo Express app
 const app = express()
+const http = require("http")
+const { Server } = require("socket.io")
+
+// Tạo HTTP server
+const server = http.createServer(app)
+
+// Khởi tạo Socket.io với CORS
+const io = new Server(server, {
+  cors: {
+    origin: ["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:3000", "http://localhost:3001"],
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"]
+  }
+})
+
+// Export io để sử dụng trong controllers
+global.io = io
+
+// Socket.io connection handler
+io.on("connection", (socket) => {
+  console.log("🔌 Client connected:", socket.id)
+  
+  // Client join room theo orderId
+  socket.on("join-order", (orderId) => {
+    socket.join(`order-${orderId}`)
+    console.log(`📦 Socket ${socket.id} joined order-${orderId}`)
+  })
+
+  // Client leave room
+  socket.on("leave-order", (orderId) => {
+    socket.leave(`order-${orderId}`)
+    console.log(`📦 Socket ${socket.id} left order-${orderId}`)
+  })
+
+  socket.on("disconnect", () => {
+    console.log("🔌 Client disconnected:", socket.id)
+  })
+})
 
 // Cấu hình CORS - cho phép frontend truy cập
 app.use(
@@ -83,6 +121,9 @@ app.get("/", (req, res) => res.send("API is running"))
 // Middleware xử lý lỗi
 app.use(errorHandler)
 
-// Khởi động server
+// Khởi động server với Socket.io
 const PORT = process.env.PORT || 5000
-app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`))
+server.listen(PORT, () => {
+  console.log(`🚀 Server running on http://localhost:${PORT}`)
+  console.log(`🔌 Socket.io ready for realtime updates`)
+})

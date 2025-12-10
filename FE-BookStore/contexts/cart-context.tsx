@@ -193,7 +193,7 @@
 "use client"
 
 import type React from "react"
-import { createContext, useContext, useState, useCallback } from "react"
+import { createContext, useContext, useState, useCallback, useEffect } from "react"
 
 export interface CartItem {
   product: {
@@ -264,6 +264,50 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [deliveryAddresses, setDeliveryAddresses] = useState<DeliveryAddress[]>([])
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null)
   const [appliedPromotion, setAppliedPromotion] = useState<Promotion | null>(null)
+  const [isInitialized, setIsInitialized] = useState(false)
+
+  // Load from localStorage on mount
+  useEffect(() => {
+    const savedItems = localStorage.getItem("cartItems")
+    const savedAddresses = localStorage.getItem("deliveryAddresses")
+    const savedAddressId = localStorage.getItem("selectedAddressId")
+    const savedPromotion = localStorage.getItem("appliedPromotion")
+
+    if (savedItems) setItems(JSON.parse(savedItems))
+    if (savedAddresses) setDeliveryAddresses(JSON.parse(savedAddresses))
+    if (savedAddressId) setSelectedAddressId(savedAddressId)
+    if (savedPromotion) setAppliedPromotion(JSON.parse(savedPromotion))
+
+    setIsInitialized(true)
+  }, [])
+
+  // Save to localStorage whenever items change
+  useEffect(() => {
+    if (isInitialized) {
+      localStorage.setItem("cartItems", JSON.stringify(items))
+    }
+  }, [items, isInitialized])
+
+  // Save addresses to localStorage
+  useEffect(() => {
+    if (isInitialized) {
+      localStorage.setItem("deliveryAddresses", JSON.stringify(deliveryAddresses))
+    }
+  }, [deliveryAddresses, isInitialized])
+
+  // Save selected address to localStorage
+  useEffect(() => {
+    if (isInitialized) {
+      localStorage.setItem("selectedAddressId", selectedAddressId || "")
+    }
+  }, [selectedAddressId, isInitialized])
+
+  // Save promotion to localStorage
+  useEffect(() => {
+    if (isInitialized) {
+      localStorage.setItem("appliedPromotion", JSON.stringify(appliedPromotion))
+    }
+  }, [appliedPromotion, isInitialized])
 
   const getTotalItems = useCallback(() => {
     return items.reduce((sum, item) => sum + item.quantity, 0)
