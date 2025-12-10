@@ -194,7 +194,6 @@
 
 import type React from "react"
 import { createContext, useContext, useState, useCallback } from "react"
-import { message } from "antd";
 
 export interface CartItem {
   product: {
@@ -203,7 +202,6 @@ export interface CartItem {
     price: number
     coverImage: string
     volume: string
-    stock: number
   }
   quantity: number
 }
@@ -319,59 +317,17 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     return subtotal - discount + shipping + tax
   }, [getTotalPrice, getDiscountAmount, getShippingFee, getTax])
 
-  const addToCart = useCallback((product: CartItem["product"], quantityToAdd: number) => {
-    let updateSuccess = false;
-    let messageToShow = "";
-
+  const addToCart = useCallback((product: CartItem["product"], quantity: number) => {
     setItems((prevItems) => {
-      const existingItemIndex = prevItems.findIndex((item) => item.product.id === product.id);
-
-      if (existingItemIndex > -1) {
-        const existingItem = prevItems[existingItemIndex];
-        const newQuantity = existingItem.quantity + quantityToAdd;
-
-        if (newQuantity > product.stock) {
-          // Lỗi: Vượt quá tồn kho
-          messageToShow = `Số lượng "${product.title}" đã vượt quá tồn kho (${product.stock})!`;
-          updateSuccess = false; 
-          return prevItems;
-        }
-        // Cập nhật số lượng thành công
-        const updatedItems = [...prevItems];
-        updatedItems[existingItemIndex] = { ...existingItem, quantity: newQuantity };
-        messageToShow = `Đã thêm ${quantityToAdd} cuốn "${product.title}" vào giỏ hàng.`;
-        updateSuccess = true;
-        return updatedItems;
-
-      } else {
-        // // Sản phẩm mới
-        // if (quantityToAdd > product.stock) {
-        //   // Lỗi: Vượt quá tồn kho
-        //   messageToShow = `Số lượng muốn thêm (${quantityToAdd}) của "${product.title}" vượt quá tồn kho (${product.stock})!`;
-        //   updateSuccess = false; // Đánh dấu thất bại
-        //   return prevItems; // Không thay đổi giỏ hàng
-        // }
-
-        // Thêm mới thành công
-        messageToShow = `Đã thêm ${quantityToAdd} cuốn "${product.title}" vào giỏ hàng.`;
-        updateSuccess = true; // Đánh dấu thành công
-        return [...prevItems, { product, quantity: quantityToAdd }];
+      const existingItem = prevItems.find((item) => item.product.id === product.id)
+      if (existingItem) {
+        return prevItems.map((item) =>
+          item.product.id === product.id ? { ...item, quantity: item.quantity + quantity } : item,
+        )
       }
-    });
-
-    // Chỉ hiển thị thông báo sau khi state đã được cập nhật (hoặc không)
-    // Dùng setTimeout để đảm bảo message hiển thị sau khi render lại state (nếu có)
-    setTimeout(() => {
-      if (messageToShow) {
-        if (updateSuccess) {
-          message.success(messageToShow);
-        } else {
-          message.error(messageToShow);
-        }
-      }
-    }, 0);
-
-  }, []); // Dependencies trống vì logic chỉ dựa vào state trước đó và tham số
+      return [...prevItems, { product, quantity }]
+    })
+  }, [])
 
   const removeFromCart = useCallback((productId: string) => {
     setItems((prevItems) => prevItems.filter((item) => item.product.id !== productId))

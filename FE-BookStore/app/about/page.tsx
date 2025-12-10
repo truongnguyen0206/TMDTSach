@@ -51,19 +51,19 @@ const services = [
 
 const team = [
   {
-    name: "Lưu Trần Bảo Khánh",
+    name: "Nguyễn Văn A",
     role: "Giám đốc điều hành",
-    image: "/ChatGPT Image 11_01_53 29 thg 11, 2025.png",
+    image: "/ceo-portrait.png",
     description: "15 năm kinh nghiệm trong ngành xuất bản và phân phối sách",
   },
   {
-    name: "Trần Thị Hương",
+    name: "Trần Thị B",
     role: "Trưởng phòng Marketing",
     image: "/marketing-manager-portrait.png",
     description: "Chuyên gia marketing với niềm đam mê sách và văn hóa đọc",
   },
   {
-    name: "Nguyễn Văn Nhật Trường",
+    name: "Lê Văn C",
     role: "Trưởng phòng Kỹ thuật",
     image: "/tech-lead-portrait.png",
     description: "Kỹ sư phần mềm với 10 năm kinh nghiệm phát triển e-commerce",
@@ -75,7 +75,7 @@ export default function AboutPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Hero Section */}
       <section className="text-center mb-16">
-        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">Về KT.BookStore</h1>
+        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">Về BookStore</h1>
         <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
           Chúng tôi là nhà sách trực tuyến hàng đầu Việt Nam, cam kết mang đến cho bạn những cuốn sách chất lượng với
           dịch vụ tốt nhất và giá cả hợp lý nhất.
@@ -111,7 +111,7 @@ export default function AboutPage() {
             <h2 className="text-3xl font-bold text-gray-900 mb-6">Câu chuyện của chúng tôi</h2>
             <div className="space-y-4 text-gray-600">
               <p>
-                KT.BookStore được thành lập vào năm 2009 với mong muốn đơn giản: làm cho việc mua sách trở nên dễ dàng và
+                BookStore được thành lập vào năm 2009 với mong muốn đơn giản: làm cho việc mua sách trở nên dễ dàng và
                 thuận tiện hơn cho mọi người. Bắt đầu từ một cửa hàng nhỏ, chúng tôi đã phát triển thành một trong những
                 nhà sách trực tuyến lớn nhất Việt Nam.
               </p>
@@ -195,9 +195,9 @@ export default function AboutPage() {
                 <MapPin className="w-12 h-12 text-blue-600 mx-auto mb-4" />
                 <h3 className="text-lg font-bold text-gray-900 mb-2">Địa chỉ</h3>
                 <p className="text-gray-600">
-                  55/30 Đường số 7, Phường 7
+                  123 Đường Nguyễn Huệ
                   <br />
-                  Quận Gò Vấp, TP.HCM
+                  Quận 1, TP.HCM
                   <br />
                   Việt Nam
                 </p>
@@ -206,9 +206,9 @@ export default function AboutPage() {
                 <Phone className="w-12 h-12 text-green-600 mx-auto mb-4" />
                 <h3 className="text-lg font-bold text-gray-900 mb-2">Điện thoại</h3>
                 <p className="text-gray-600">
-                  Hotline: (094) 6280 159
+                  Hotline: (028) 1234 5678
                   <br />
-                  Hỗ trợ: (094) 6280 159
+                  Hỗ trợ: (028) 8765 4321
                   <br />
                   8:00 - 22:00 (T2-CN)
                 </p>
@@ -217,9 +217,11 @@ export default function AboutPage() {
                 <Mail className="w-12 h-12 text-purple-600 mx-auto mb-4" />
                 <h3 className="text-lg font-bold text-gray-900 mb-2">Email</h3>
                 <p className="text-gray-600">
-                  ltranbaokhanh@gmail.com
+                  info@bookstore.vn
                   <br />
-                  nguyenvannhattruong2002@gmail.com
+                  support@bookstore.vn
+                  <br />
+                  sales@bookstore.vn
                 </p>
               </div>
             </div>
