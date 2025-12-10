@@ -50,12 +50,11 @@ console.log("Kết quả từ server:", result)
       <p className="text-gray-500 mt-2">Vui lòng chờ trong giây lát.</p>
     </div>
   )
-
+}
   export default function PaymentSuccessPage() {
   return (
     <Suspense fallback={<div>Đang tải kết quả thanh toán...</div>}>
       <PaymentSuccessContent />
     </Suspense>
   )
-}
 }
