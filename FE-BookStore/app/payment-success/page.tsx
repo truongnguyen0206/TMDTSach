@@ -3,10 +3,12 @@
 import { useEffect, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { message } from "antd"
+import { useCart } from "@/contexts/cart-context"
 
 function PaymentSuccessContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { clearCart } = useCart()
 
   useEffect(() => {
     // Lấy toàn bộ query params từ URL trả về của VNPay
@@ -29,6 +31,8 @@ function PaymentSuccessContent() {
 console.log("Kết quả từ server:", result)
         if (result.RspCode === "00") {
           message.success("Thanh toán thành công!")
+          clearCart()
+          localStorage.removeItem("checkoutData")
           router.push(`/order-confirmation?orderId=${query.vnp_TxnRef}`)
         } else {
           message.error("Thanh toán thất bại hoặc không hợp lệ!")
@@ -42,7 +46,7 @@ console.log("Kết quả từ server:", result)
     }
 
     verifyPayment()
-  }, [searchParams, router])
+  }, [searchParams, router, clearCart])
 
   return (
     <div className="flex flex-col items-center justify-center h-screen">
