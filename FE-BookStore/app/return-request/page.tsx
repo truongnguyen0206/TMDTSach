@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import React, { Suspense } from "react"
 
 import { useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
@@ -40,7 +40,7 @@ const RETURN_REASONS = [
   { value: "Lý do khác", label: "Lý do khác" },
 ]
 
-export default function ReturnRequestPage() {
+function ReturnRequestContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const orderCode = searchParams.get("orderNumber")
@@ -328,5 +328,21 @@ export default function ReturnRequestPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function ReturnRequestPage() {
+  return (
+    <Suspense fallback={
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+          <div className="h-32 bg-gray-200 rounded"></div>
+          <div className="h-64 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+    }>
+      <ReturnRequestContent />
+    </Suspense>
   )
 }

@@ -11,6 +11,7 @@ import { User, Package, Clock, CheckCircle, RotateCcw, Award, Eye, Lock, X } fro
 import { useAuth } from "@/contexts/auth-context"
 import axios from "axios"
 import { message, Modal } from "antd"
+import { getSocket, joinOrderRoom, leaveOrderRoom } from "@/lib/socket"
 
 
 interface OrderItem {
@@ -67,6 +68,47 @@ const { confirm } = Modal;
     }
     fetchUserOrders()
   }, [isAuthenticated, user, router])
+
+  // Socket.io realtime updates for all user orders
+  useEffect(() => {
+    if (!user?.id || orders.length === 0) return
+
+    const socket = getSocket()
+
+    // Join room cho tất cả các đơn hàng của user
+    orders.forEach((order) => {
+      joinOrderRoom(order._id)
+    })
+
+    // Lắng nghe sự kiện cập nhật trạng thái
+    const handleOrderUpdate = (data: any) => {
+      console.log("🔔 Received order update in profile:", data)
+
+      // Cập nhật order trong danh sách
+      setOrders((prevOrders) =>
+        prevOrders.map((order) =>
+          order._id === data.orderId
+            ? {
+                ...order,
+                status: data.status,
+              }
+            : order
+        )
+      )
+
+      message.info(`Đơn hàng ${data.orderCode} đã được cập nhật!`)
+    }
+
+    socket.on("order-status-updated", handleOrderUpdate)
+
+    // Cleanup khi unmount
+    return () => {
+      socket.off("order-status-updated", handleOrderUpdate)
+      orders.forEach((order) => {
+        leaveOrderRoom(order._id)
+      })
+    }
+  }, [user?.id, orders.length])
 
   const getTotalPurchasedItems = () => {
     return orders.reduce((total, order) => {
