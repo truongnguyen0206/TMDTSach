@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Search, Package, Truck, CheckCircle, Clock, XCircle, RotateCcw, Award } from "lucide-react"
 import { message } from "antd"
 import { useSearchParams } from "next/navigation"
+import { getSocket, joinOrderRoom, leaveOrderRoom } from "@/lib/socket"
 
 type ShippingAddress = {
   fullName: string
@@ -29,6 +30,7 @@ type OrderItem = {
 }
 
 type Order = {
+  _id?: string
   orderNumber: string
   createdAt: string
   completedDate?: string
@@ -39,6 +41,7 @@ type Order = {
   status: string
   shippingAddress: ShippingAddress
   items: OrderItem[]
+  statusHistory?: any[]
 }
 
 export default function OrderTrackingPage() {
@@ -75,6 +78,43 @@ export default function OrderTrackingPage() {
       handleSearch(initialOrderNumber)
     }
   }, [initialOrderNumber])
+
+  // Socket.io realtime updates
+  useEffect(() => {
+    if (!order || !order.orderNumber) return
+
+    const socket = getSocket()
+
+    // Join order room để nhận updates
+    joinOrderRoom(order._id || order.orderNumber)
+
+    // Lắng nghe sự kiện cập nhật trạng thái
+    const handleOrderUpdate = (data: any) => {
+      console.log("🔔 Received order update:", data)
+      
+      // Cập nhật order state với dữ liệu mới
+      setOrder((prevOrder) => {
+        if (!prevOrder) return prevOrder
+        return {
+          ...prevOrder,
+          status: data.status,
+          statusHistory: data.statusHistory || prevOrder.statusHistory,
+        }
+      })
+
+      message.info(`Trạng thái đơn hàng đã được cập nhật!`)
+    }
+
+    socket.on("order-status-updated", handleOrderUpdate)
+
+    // Cleanup khi unmount
+    return () => {
+      socket.off("order-status-updated", handleOrderUpdate)
+      if (order._id || order.orderNumber) {
+        leaveOrderRoom(order._id || order.orderNumber)
+      }
+    }
+  }, [order?._id, order?.orderNumber])
 
   const getStatusBadge = (status: string) => {
     const statusConfig: Record<string, { text: string; color: string }> = {

@@ -1,10 +1,10 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { message } from "antd"
 
-export default function PaymentSuccessPage() {
+function PaymentSuccessContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -49,5 +49,18 @@ console.log("Kết quả từ server:", result)
       <h2 className="text-2xl font-semibold text-gray-800">Đang xác nhận thanh toán...</h2>
       <p className="text-gray-500 mt-2">Vui lòng chờ trong giây lát.</p>
     </div>
+  )
+}
+
+export default function PaymentSuccessPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex flex-col items-center justify-center h-screen">
+        <h2 className="text-2xl font-semibold text-gray-800">Đang tải...</h2>
+        <p className="text-gray-500 mt-2">Vui lòng chờ trong giây lát.</p>
+      </div>
+    }>
+      <PaymentSuccessContent />
+    </Suspense>
   )
 }
