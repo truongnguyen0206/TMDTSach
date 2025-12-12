@@ -33,6 +33,7 @@ interface Order {
 }
 
 export default function ProfilePage() {
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
   const router = useRouter()
   const { user, isAuthenticated } = useAuth()
   const [orders, setOrders] = useState<Order[]>([])
@@ -48,7 +49,7 @@ const { confirm } = Modal;
   const fetchUserOrders = async () => {
     if (!user?.id) return
     try {
-      const res = await axios.get(`http://localhost:5000/api/orders/user/${user.id}`)
+      const res = await axios.get(`${API_URL}/orders/user/${user.id}`)
       if (res.data.success) {
         setOrders(res.data.orders)
       }
@@ -170,7 +171,7 @@ const handleCancelOrder = async (orderId: string) => {
       setCancelingOrderId(orderId)
       try {
         const res = await axios.put(
-          `http://localhost:5000/api/orders/status/cancelOrder/${orderId}`,
+          `${API_URL}/orders/status/cancelOrder/${orderId}`,
           {
             userId: user.id,
             userName: user.name,
@@ -214,7 +215,7 @@ const handleCancelOrder = async (orderId: string) => {
 
     setIsChangingPassword(true)
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/updatepassword", {
+      const res = await axios.post(`${API_URL}/auth/updatepassword`, {
         currentPassword: passwordData.currentPassword,
         newPassword: passwordData.newPassword,
         userId: user?.id,

@@ -4,7 +4,9 @@ let socket: Socket | null = null
 
 export const initSocket = () => {
   if (!socket) {
-    socket = io("http://localhost:5000", {
+    const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:5000";
+    
+    socket = io(SOCKET_URL, {
       transports: ["websocket", "polling"],
       reconnection: true,
       reconnectionDelay: 1000,

@@ -46,7 +46,8 @@ const fetchBooks = async () => {
   try {
     setLoading(true);
 
-    const res = await axios.get("http://localhost:5000/api/books");
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+    const res = await axios.get(`${API_URL}/books`);
     if (res.data && res.data.success) {
       const books: Product[] = res.data.data || [];
       setProducts(books);

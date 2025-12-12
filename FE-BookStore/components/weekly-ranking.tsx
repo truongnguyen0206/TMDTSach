@@ -37,7 +37,8 @@ export default function WeeklyRanking() {
   const fetchTopProducts = async () => {
     try {
       setLoading(true)
-      const res = await axios.get("http://localhost:5000/api/statistics/top")
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+      const res = await axios.get(`${API_URL}/statistics/top`)
 
       if (res.data?.topProducts) {
         const products = res.data.topProducts

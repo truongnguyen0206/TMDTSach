@@ -276,6 +276,7 @@ import { useAuth } from "@/contexts/auth-context"
 import { CheckoutData } from "@/lib/orders-data"
 
 export default function PaymentPage() {
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
   const router = useRouter()
   const { clearCart } = useCart()
   const [isProcessing, setIsProcessing] = useState(false)
@@ -325,7 +326,7 @@ export default function PaymentPage() {
 
       // Nếu chọn thanh toán COD
       if (checkoutData.paymentMethod === "cod") {
-        const response = await fetch("http://localhost:5000/api/orders", {
+        const response = await fetch(`${API_URL}/orders`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(orderData),
@@ -343,7 +344,7 @@ export default function PaymentPage() {
       }
 
       // ✅ Nếu chọn thanh toán qua VNPay
-      const response = await fetch("http://localhost:5000/api/orders/checkout", {
+      const response = await fetch(`${API_URL}/orders/checkout`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(orderData),

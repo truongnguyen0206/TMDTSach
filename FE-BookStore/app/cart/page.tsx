@@ -20,7 +20,8 @@ import { useAuth } from "@/contexts/auth-context"
 
 const checkStockAvailability = async (cartItems: any[]) => {
   try {
-    const response = await fetch("http://localhost:5000/api/books")
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+const response = await fetch(`${API_URL}/books`)
     if (!response.ok) {
       throw new Error("Không thể lấy thông tin stock")
     }
