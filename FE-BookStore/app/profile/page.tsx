@@ -9,34 +9,21 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { User, Package, Clock, CheckCircle, RotateCcw, Award, Eye, Lock, X } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
-import axios from "axios"
 import { message, Modal } from "antd"
 import { getSocket, joinOrderRoom, leaveOrderRoom } from "@/lib/socket"
-
-
-interface OrderItem {
-  productId: string
-  title: string
-  price: number
-  quantity: number
-  image?: string
-}
-
-interface Order {
-  _id: string
-  orderCode: string
-  status: string
-  total: number
-  createdAt: string
-  paymentMethod: string
-  items: OrderItem[]
-}
+import { useUserOrders, useCancelOrder } from "@/hooks/useOrders"
+import { useUpdatePassword } from "@/hooks/useAuth"
+import type { Order } from "@/interface/response/order"
 
 export default function ProfilePage() {
   const router = useRouter()
   const { user, isAuthenticated } = useAuth()
-  const [orders, setOrders] = useState<Order[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const { data: ordersData, isLoading } = useUserOrders(user?.id || "")
+  const orders = ordersData?.orders || []
+
+  const cancelOrderMutation = useCancelOrder()
+  const updatePasswordMutation = useUpdatePassword()
+
   const [cancelingOrderId, setCancelingOrderId] = useState<string | null>(null)
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
@@ -44,21 +31,7 @@ export default function ProfilePage() {
     confirmPassword: "",
   })
   const [isChangingPassword, setIsChangingPassword] = useState(false)
-const { confirm } = Modal;
-  const fetchUserOrders = async () => {
-    if (!user?.id) return
-    try {
-      const res = await axios.get(`http://localhost:5000/api/orders/user/${user.id}`)
-      if (res.data.success) {
-        setOrders(res.data.orders)
-      }
-    } catch (error: any) {
-      console.error("Lỗi khi lấy đơn hàng:", error)
-      message.error("Không thể tải danh sách đơn hàng!")
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  const { confirm } = Modal
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -66,17 +39,16 @@ const { confirm } = Modal;
       router.push("/login")
       return
     }
-    fetchUserOrders()
-  }, [isAuthenticated, user, router])
+  }, [isAuthenticated, router])
 
-  // Socket.io realtime updates for all user orders
+  // Socket.io realtime updates - React Query will handle refetching automatically
   useEffect(() => {
     if (!user?.id || orders.length === 0) return
 
     const socket = getSocket()
 
     // Join room cho tất cả các đơn hàng của user
-    orders.forEach((order) => {
+    orders.forEach((order: Order) => {
       joinOrderRoom(order._id)
     })
 
@@ -84,18 +56,7 @@ const { confirm } = Modal;
     const handleOrderUpdate = (data: any) => {
       console.log("🔔 Received order update in profile:", data)
 
-      // Cập nhật order trong danh sách
-      setOrders((prevOrders) =>
-        prevOrders.map((order) =>
-          order._id === data.orderId
-            ? {
-                ...order,
-                status: data.status,
-              }
-            : order
-        )
-      )
-
+      // React Query will automatically refetch orders
       message.info(`Đơn hàng ${data.orderCode} đã được cập nhật!`)
     }
 
@@ -104,7 +65,7 @@ const { confirm } = Modal;
     // Cleanup khi unmount
     return () => {
       socket.off("order-status-updated", handleOrderUpdate)
-      orders.forEach((order) => {
+      orders.forEach((order: Order) => {
         leaveOrderRoom(order._id)
       })
     }
@@ -154,46 +115,43 @@ const { confirm } = Modal;
     }
     return stats
   }
-//huỷ đơn
-const handleCancelOrder = async (orderId: string) => {
-  if (!user?.id) {
-    message.error("Không tìm thấy thông tin người dùng!")
-    return
-  }
+  //huỷ đơn
+  const handleCancelOrder = async (orderId: string) => {
+    if (!user?.id) {
+      message.error("Không tìm thấy thông tin người dùng!")
+      return
+    }
 
-  confirm({
-    title: "Xác nhận hủy đơn hàng",
-    content: "Bạn có chắc muốn hủy đơn hàng này không?",
-    okText: "Đồng ý",
-    cancelText: "Hủy",
-    onOk: async () => {
-      setCancelingOrderId(orderId)
-      try {
-        const res = await axios.put(
-          `http://localhost:5000/api/orders/status/cancelOrder/${orderId}`,
+    confirm({
+      title: "Xác nhận hủy đơn hàng",
+      content: "Bạn có chắc muốn hủy đơn hàng này không?",
+      okText: "Đồng ý",
+      cancelText: "Hủy",
+      onOk: async () => {
+        setCancelingOrderId(orderId)
+        cancelOrderMutation.mutate(
           {
-            userId: user.id,
-            userName: user.name,
+            orderId,
+            data: {
+              userId: user.id,
+              userName: user.name,
+            },
+          },
+          {
+            onSuccess: () => {
+              message.success("Hủy đơn hàng thành công!")
+              setCancelingOrderId(null)
+            },
+            onError: (error: any) => {
+              console.error("Lỗi khi hủy đơn hàng:", error)
+              message.error(error.response?.data?.message || "Hủy đơn hàng thất bại!")
+              setCancelingOrderId(null)
+            },
           }
         )
-
-        if (res.data.success) {
-          message.success("Hủy đơn hàng thành công!")
-          setOrders(orders.map((order) =>
-            order._id === orderId ? { ...order, status: "huydonhang" } : order
-          ))
-        } else {
-          message.error(res.data.message || "Hủy đơn hàng thất bại!")
-        }
-      } catch (error: any) {
-        console.error("Lỗi khi hủy đơn hàng:", error)
-        message.error(error.response?.data?.message || "Hủy đơn hàng thất bại!")
-      } finally {
-        setCancelingOrderId(null)
-      }
-    },
-  })
-}
+      },
+    })
+  }
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -212,29 +170,36 @@ const handleCancelOrder = async (orderId: string) => {
       return
     }
 
+    if (!user?.id) return
+
     setIsChangingPassword(true)
-    try {
-      const res = await axios.post("http://localhost:5000/api/auth/updatepassword", {
+    updatePasswordMutation.mutate(
+      {
         currentPassword: passwordData.currentPassword,
         newPassword: passwordData.newPassword,
-        userId: user?.id,
-      })
-      if (res.data.success) {
-        message.success("Đổi mật khẩu thành công!")
-        setPasswordData({
-          currentPassword: "",
-          newPassword: "",
-          confirmPassword: "",
-        })
-      } else {
-        message.error(res.data.message || "Đổi mật khẩu thất bại!")
+        userId: user.id,
+      },
+      {
+        onSuccess: (data) => {
+          if (data.success) {
+            message.success("Đổi mật khẩu thành công!")
+            setPasswordData({
+              currentPassword: "",
+              newPassword: "",
+              confirmPassword: "",
+            })
+          } else {
+            message.error(data.message || "Đổi mật khẩu thất bại!")
+          }
+          setIsChangingPassword(false)
+        },
+        onError: (error: any) => {
+          console.error("Lỗi khi đổi mật khẩu:", error)
+          message.error(error.response?.data?.message || "Đổi mật khẩu thất bại!")
+          setIsChangingPassword(false)
+        },
       }
-    } catch (error: any) {
-      console.error("Lỗi khi đổi mật khẩu:", error)
-      message.error(error.response?.data?.message || "Đổi mật khẩu thất bại!")
-    } finally {
-      setIsChangingPassword(false)
-    }
+    )
   }
 
   if (!isAuthenticated || !user) return null

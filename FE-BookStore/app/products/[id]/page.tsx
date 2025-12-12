@@ -1,7 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import axios from "axios"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ArrowLeft, ShoppingCart, Minus, Plus } from "lucide-react"
@@ -10,79 +9,38 @@ import Link from "next/link"
 import { useCart } from "@/contexts/cart-context"
 import { message } from "antd"
 import { useParams } from "next/navigation"
-
-interface Category {
-  _id: string
-  name: string
-}
-
-interface Product {
-  _id: string
-  title: string
-  author: string
-  ISSN: string
-  category: Category
-  price: number
-  stock: number
-  publishYear: number
-  pages: number
-  coverImage: string
-  description: string
-  volume?: string
-}
+import { useBook } from "@/hooks/useBooks"
 
 export default function ProductDetailPage() {
   const params = useParams()
   const productId = params.id as string
-  const [product, setProduct] = useState<Product | null>(null)
-  const [loading, setLoading] = useState(true)
+  const { data: productData, isLoading: loading } = useBook(productId)
+  const product = productData?.data || null
+
   const [quantity, setQuantity] = useState(1)
   const { addToCart } = useCart()
 
-  useEffect(() => {
-    const fetchProduct = async () => {
-      try {
-        setLoading(true)
-        const res = await axios.get(`http://localhost:5000/api/books/${productId}`)
-        if (res.data && res.data.success) {
-          setProduct(res.data.data)
-        } else {
-          setProduct(res.data.data || res.data)
-        }
-      } catch (error) {
-        console.error("Lỗi khi tải chi tiết sách:", error)
-        message.error("Không thể tải chi tiết sách.")
-      } finally {
-        setLoading(false)
-      }
+  const handleAddToCart = () => {
+    if (!product) return
+
+    if (quantity > product.stock) {
+      return message.error("Số lượng vượt quá hàng tồn kho!")
     }
 
-    if (productId) {
-      fetchProduct()
-    }
-  }, [productId])
+    addToCart(
+      {
+        id: product._id,
+        title: product.title,
+        price: product.price,
+        coverImage: product.coverImage,
+        volume: product.volume || ""
+      },
+      quantity
+    )
 
-const handleAddToCart = () => {
-  if (!product) return
-
-  if (quantity > product.stock) {
-    return message.error("Số lượng vượt quá hàng tồn kho!")
+    message.success(`Đã thêm ${quantity} cuốn "${product.title}" vào giỏ hàng!`)
+    setQuantity(1)
   }
-
-  addToCart(
-    {
-      id: product._id,
-      title: product.title,
-      price: product.price,
-      coverImage: product.coverImage,
-      volume: product.volume || ""
-    },
-    quantity
-  )
-
-  message.success(`Đã thêm ${quantity} cuốn "${product.title}" vào giỏ hàng!`)
-  setQuantity(1)
-}
 
   const handleQuantityChange = (value: number) => {
     if (product) {

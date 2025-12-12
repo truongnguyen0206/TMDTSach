@@ -9,112 +9,50 @@ import { Badge } from "@/components/ui/badge"
 import { Search, Package, Truck, CheckCircle, Clock, XCircle, RotateCcw, Award } from "lucide-react"
 import { message } from "antd"
 import { useSearchParams } from "next/navigation"
-import { getSocket, joinOrderRoom, leaveOrderRoom } from "@/lib/socket"
-
-type ShippingAddress = {
-  fullName: string
-  phone: string
-  address: string
-  ward: string
-  district: string
-  city: string
-  notes?: string
-}
-
-type OrderItem = {
-  title: string
-  author?: string
-  image?: string
-  price: number
-  quantity: number
-}
-
-type Order = {
-  _id?: string
-  orderNumber: string
-  createdAt: string
-  completedDate?: string
-  refundDate?: string
-  refundReason?: string
-  total: number
-  paymentMethod: string
-  status: string
-  shippingAddress: ShippingAddress
-  items: OrderItem[]
-  statusHistory?: any[]
-}
+import { useOrderByCode } from "@/hooks/useOrders"
+import { useReturnByOrderId } from "@/hooks/useReturns"
+import type { Order } from "@/interface/response/order"
+import type { ReturnRequest } from "@/interface/response/return"
 
 export default function OrderTrackingPage() {
-  const [order, setOrder] = useState<Order | null>(null)
-  const [isSearching, setIsSearching] = useState(false)
   const searchParams = useSearchParams()
   const initialOrderNumber = searchParams.get("orderNumber") || ""
   const [orderNumber, setOrderNumber] = useState(initialOrderNumber)
+  const [searchCode, setSearchCode] = useState("")
 
-  // Tìm đơn hàng từ API
+  // Use React Query hook
+  const { data: orderData, isLoading: isSearching, refetch } = useOrderByCode(searchCode)
+  const order = orderData?.order || null
+
+  // Fetch return data if order exists
+  const { data: returnData, refetch: refetchReturn } = useReturnByOrderId(order?._id || "")
+  const returnRequest = returnData?.data || null
+
+  // Tìm đơn hàng
   const handleSearch = async (number?: string) => {
     const code = number || orderNumber
     if (!code.trim()) return message.error("Vui lòng nhập mã đơn hàng!")
 
-    setIsSearching(true)
-
-    try {
-      const res = await fetch(`http://localhost:5000/api/orders/orderCode/${code.trim()}`)
-      if (!res.ok) throw new Error("Không tìm thấy đơn hàng")
-      const data = await res.json()
-      setOrder(data.order)
-      message.success("Tìm thấy đơn hàng!")
-    } catch (error) {
-      setOrder(null)
-      message.error("Không tìm thấy đơn hàng!")
-    } finally {
-      setIsSearching(false)
-    }
+    setSearchCode(code.trim())
+    refetch()
   }
 
   useEffect(() => {
     if (initialOrderNumber.trim()) {
       setOrderNumber(initialOrderNumber)
-      handleSearch(initialOrderNumber)
+      setSearchCode(initialOrderNumber.trim())
     }
   }, [initialOrderNumber])
 
-  // Socket.io realtime updates
   useEffect(() => {
-    if (!order || !order.orderNumber) return
-
-    const socket = getSocket()
-
-    // Join order room để nhận updates
-    joinOrderRoom(order._id || order.orderNumber)
-
-    // Lắng nghe sự kiện cập nhật trạng thái
-    const handleOrderUpdate = (data: any) => {
-      console.log("🔔 Received order update:", data)
-      
-      // Cập nhật order state với dữ liệu mới
-      setOrder((prevOrder) => {
-        if (!prevOrder) return prevOrder
-        return {
-          ...prevOrder,
-          status: data.status,
-          statusHistory: data.statusHistory || prevOrder.statusHistory,
-        }
-      })
-
-      message.info(`Trạng thái đơn hàng đã được cập nhật!`)
+    if (orderData && !orderData.success) {
+      message.error("Không tìm thấy đơn hàng!")
+    } else if (orderData?.success) {
+      message.success("Tìm thấy đơn hàng!")
     }
+  }, [orderData])
 
-    socket.on("order-status-updated", handleOrderUpdate)
 
-    // Cleanup khi unmount
-    return () => {
-      socket.off("order-status-updated", handleOrderUpdate)
-      if (order._id || order.orderNumber) {
-        leaveOrderRoom(order._id || order.orderNumber)
-      }
-    }
-  }, [order?._id, order?.orderNumber])
 
   const getStatusBadge = (status: string) => {
     const statusConfig: Record<string, { text: string; color: string }> = {
@@ -130,7 +68,7 @@ export default function OrderTrackingPage() {
       yeu_cau_hoan_tra: { text: "Yêu cầu hoàn trả", color: "bg-red-500" },
       paid: { text: "Hoàn trả", color: "bg-green-500" },
       tuchoi: { text: "Đơn hàng bị huỷ", color: "bg-red-500" },
-      huydonhang: { text: "Đã huỷ đơn", color: "bg-yellow-400",},
+      huydonhang: { text: "Đã huỷ đơn", color: "bg-yellow-400", },
     }
     const config = statusConfig[status] || statusConfig.pending
     return <Badge className={`${config.color} hover:${config.color}`}>{config.text}</Badge>
@@ -163,21 +101,6 @@ export default function OrderTrackingPage() {
   }
 
   const getTrackingSteps = (currentStatus: string) => {
-    const isReturnRequest = currentStatus === "yeu_cau_hoan_tra"
-
-    if (isReturnRequest) {
-      const returnSteps = [
-        { key: "yeu_cau_hoan_tra", label: "Yêu cầu hoàn trả", description: "Yêu cầu hoàn trả đã được gửi" },
-        { key: "inspection", label: "Kiểm tra hàng", description: "Đang kiểm tra hàng trả về" },
-        { key: "refunded", label: "Hoàn trả thành công", description: "Tiền sẽ chuyển về tài khoản trong 3-5 ngày" },
-      ]
-      return returnSteps.map((step) => ({
-        ...step,
-        completed: false,
-        active: true,
-      }))
-    }
-
     const steps = [
       { key: "pending", label: "Chờ xác nhận", description: "Đơn hàng đã được tiếp nhận" },
       { key: "confirmed", label: "Đã xác nhận", description: "Đơn hàng đã được xác nhận" },
@@ -189,6 +112,21 @@ export default function OrderTrackingPage() {
     const statusOrder = ["pending", "confirmed", "processing", "shipping", "delivered", "completed"]
     const currentIndex = statusOrder.indexOf(currentStatus)
     return steps.map((step, index) => ({
+      ...step,
+      completed: index <= currentIndex,
+      active: index === currentIndex,
+    }))
+  }
+
+  const getReturnTrackingSteps = (returnStatus: string) => {
+    const returnSteps = [
+      { key: "accepted", label: "Yêu cầu hoàn trả", description: "Yêu cầu hoàn trả đã được chấp nhận" },
+      { key: "checking", label: "Kiểm tra hàng", description: "Đang kiểm tra hàng trả về" },
+      { key: "completed", label: "Hoàn trả thành công", description: "Tiền sẽ chuyển về tài khoản trong 3-5 ngày" },
+    ]
+    const statusOrder = ["accepted", "checking", "completed"]
+    const currentIndex = statusOrder.indexOf(returnStatus)
+    return returnSteps.map((step, index) => ({
       ...step,
       completed: index <= currentIndex,
       active: index === currentIndex,
@@ -248,7 +186,7 @@ export default function OrderTrackingPage() {
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <span className="font-medium">Mã đơn hàng:</span>
-                    <span className="font-mono text-blue-600">{order.orderNumber}</span>
+                    <span className="font-mono text-blue-600">{order.orderCode}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="font-medium">Ngày đặt:</span>
@@ -279,26 +217,23 @@ export default function OrderTrackingPage() {
             </CardContent>
           </Card>
 
-          {/* Tracking Timeline */}
-          {order.status !== "cancelled" && order.status !== "refunded" && (
+          {/* Order Status Tracking Timeline */}
+          {order.status !== "cancelled" && order.status !== "refunded" && !returnRequest && (
             <Card className="mb-6">
               <CardHeader>
-                <CardTitle>
-                  {order.status === "yeu_cau_hoan_tra" ? "Trạng thái hoàn trả" : "Trạng thái đơn hàng"}
-                </CardTitle>
+                <CardTitle>Trạng thái đơn hàng</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   {getTrackingSteps(order.status).map((step) => (
                     <div key={step.key} className="flex items-center space-x-4">
                       <div
-                        className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
-                          step.completed
-                            ? "bg-green-100 text-green-600"
-                            : step.active
-                              ? "bg-blue-100 text-blue-600"
-                              : "bg-gray-100 text-gray-400"
-                        }`}
+                        className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${step.completed
+                          ? "bg-green-100 text-green-600"
+                          : step.active
+                            ? "bg-blue-100 text-blue-600"
+                            : "bg-gray-100 text-gray-400"
+                          }`}
                       >
                         {step.completed ? (
                           <CheckCircle className="w-5 h-5" />
@@ -321,6 +256,54 @@ export default function OrderTrackingPage() {
                       {step.completed && (
                         <div className="text-sm text-green-600">
                           {step.key === order.status ? "Hiện tại" : "Hoàn thành"}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Return Status Tracking Timeline */}
+          {returnRequest && (
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle>Trạng thái trả hàng</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {getReturnTrackingSteps(returnRequest.status).map((step) => (
+                    <div key={step.key} className="flex items-center space-x-4">
+                      <div
+                        className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${step.completed
+                          ? "bg-green-100 text-green-600"
+                          : step.active
+                            ? "bg-blue-100 text-blue-600"
+                            : "bg-gray-100 text-gray-400"
+                          }`}
+                      >
+                        {step.completed ? (
+                          <CheckCircle className="w-5 h-5" />
+                        ) : step.active ? (
+                          getStatusIcon(step.key)
+                        ) : (
+                          <Clock className="w-5 h-5" />
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <h4
+                          className={`font-medium ${step.completed || step.active ? "text-gray-900" : "text-gray-500"}`}
+                        >
+                          {step.label}
+                        </h4>
+                        <p className={`text-sm ${step.completed || step.active ? "text-gray-600" : "text-gray-400"}`}>
+                          {step.description}
+                        </p>
+                      </div>
+                      {step.completed && (
+                        <div className="text-sm text-green-600">
+                          {step.key === returnRequest.status ? "Hiện tại" : "Hoàn thành"}
                         </div>
                       )}
                     </div>
@@ -364,16 +347,47 @@ export default function OrderTrackingPage() {
             </Card>
           )}
 
-          {order.status === "yeu_cau_hoan_tra" && (
+          {returnRequest && returnRequest.status === "accepted" && (
             <Card className="border-orange-200 mb-6">
               <CardContent className="p-6">
                 <div className="flex items-center space-x-3 text-orange-600">
                   <RotateCcw className="w-6 h-6" />
                   <div>
-                    <h3 className="font-medium">Yêu cầu hoàn trả đang được xử lý</h3>
+                    <h3 className="font-medium">Yêu cầu hoàn trả đã được chấp nhận</h3>
                     <p className="text-sm text-orange-500">
-                      Yêu cầu hoàn trả của bạn đã được tiếp nhận. Vui lòng chờ chúng tôi kiểm tra hàng trả về. Tiền sẽ
-                      được hoàn lại sau khi kiểm tra xong.
+                      Yêu cầu hoàn trả của bạn đã được chấp nhận. Vui lòng chờ chúng tôi kiểm tra hàng trả về.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {returnRequest && returnRequest.status === "checking" && (
+            <Card className="border-blue-200 mb-6">
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-3 text-blue-600">
+                  <Package className="w-6 h-6" />
+                  <div>
+                    <h3 className="font-medium">Đang kiểm tra hàng trả về</h3>
+                    <p className="text-sm text-blue-500">
+                      Chúng tôi đang kiểm tra hàng trả về. Tiền sẽ được hoàn lại sau khi kiểm tra xong.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {returnRequest && returnRequest.status === "completed" && (
+            <Card className="border-green-200 mb-6">
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-3 text-green-600">
+                  <CheckCircle className="w-6 h-6" />
+                  <div>
+                    <h3 className="font-medium">Hoàn trả thành công</h3>
+                    <p className="text-sm text-green-500">
+                      Đơn hàng của bạn đã được hoàn trả thành công. Tiền sẽ được chuyển về tài khoản trong 3-5 ngày làm việc.
                     </p>
                   </div>
                 </div>
@@ -398,7 +412,7 @@ export default function OrderTrackingPage() {
                   )}
                   <div className="flex-1">
                     <p className="font-medium">{item.title}</p>
-                    {item.author && <p className="text-sm text-gray-500">{item.author}</p>}
+                    {(item as any)?.author && <p className="text-sm text-gray-500">{(item as any).author}</p>}
                     <p className="text-sm text-gray-700">
                       {item.quantity} x {item.price.toLocaleString("vi-VN")}đ
                     </p>

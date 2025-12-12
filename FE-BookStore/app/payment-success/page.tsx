@@ -4,11 +4,13 @@ import { useEffect, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { message } from "antd"
 import { useCart } from "@/contexts/cart-context"
+import { useVerifyVNPayPayment } from "@/hooks/useOrders"
 
 function PaymentSuccessContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { clearCart } = useCart()
+  const verifyPaymentMutation = useVerifyVNPayPayment()
 
   useEffect(() => {
     // Lấy toàn bộ query params từ URL trả về của VNPay
@@ -21,14 +23,11 @@ function PaymentSuccessContent() {
     }
 
     // Gửi query params lên server để xác thực
-    const verifyPayment = async () => {
-      try {
-        const response = await fetch(`http://localhost:5000/api/orders/vnpay_ipn?${new URLSearchParams(query)}`, {
-          method: "GET",
-        })
+    const queryString = new URLSearchParams(query).toString()
 
-        const result = await response.json()
-console.log("Kết quả từ server:", result)
+    verifyPaymentMutation.mutate(queryString, {
+      onSuccess: (result) => {
+        console.log("Kết quả từ server:", result)
         if (result.RspCode === "00") {
           message.success("Thanh toán thành công!")
           clearCart()
@@ -38,15 +37,14 @@ console.log("Kết quả từ server:", result)
           message.error("Thanh toán thất bại hoặc không hợp lệ!")
           router.push("/cart")
         }
-      } catch (error) {
+      },
+      onError: (error) => {
         console.error("Lỗi xác nhận thanh toán:", error)
         message.error("Có lỗi xảy ra khi xác nhận thanh toán!")
         router.push("/cart")
-      }
-    }
-
-    verifyPayment()
-  }, [searchParams, router, clearCart])
+      },
+    })
+  }, [searchParams, router, clearCart, verifyPaymentMutation])
 
   return (
     <div className="flex flex-col items-center justify-center h-screen">

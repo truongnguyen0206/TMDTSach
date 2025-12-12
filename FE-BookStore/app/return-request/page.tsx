@@ -8,9 +8,10 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Upload, ArrowLeft, CheckCircle } from "lucide-react"
-import axios from "axios"
 import { message } from "antd"
 import { useAuth } from "@/contexts/auth-context"
+import { useOrderByCode } from "@/hooks/useOrders"
+import { useSubmitReturnRequest } from "@/hooks/useReturns"
 
 interface OrderItem {
   productId: string
@@ -43,12 +44,14 @@ const RETURN_REASONS = [
 function ReturnRequestContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const orderCode = searchParams.get("orderNumber")
+  const orderCode = searchParams.get("orderNumber") || ""
   const { user } = useAuth()
 
-  const [order, setOrder] = useState<Order | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  // Use React Query hooks
+  const { data: orderData, isLoading } = useOrderByCode(orderCode)
+  const order = orderData?.order || null
+  const submitReturnMutation = useSubmitReturnRequest()
+
   const [submitted, setSubmitted] = useState(false)
 
   const [formData, setFormData] = useState({
@@ -58,28 +61,17 @@ function ReturnRequestContent() {
   })
 
   React.useEffect(() => {
-    const fetchOrder = async () => {
-      if (!orderCode) {
-        message.error("Không tìm thấy mã đơn hàng")
-        router.push("/profile")
-        return
-      }
-      try {
-        const res = await axios.get(`http://localhost:5000/api/orders/orderCode/${orderCode}`)
-        if (res.data.success) {
-          setOrder(res.data.order)
-        }
-      } catch (error: any) {
-        console.error("Lỗi khi lấy thông tin đơn hàng:", error)
-        message.error("Không thể tải thông tin đơn hàng!")
-        router.push("/profile")
-      } finally {
-        setIsLoading(false)
-      }
+    if (!orderCode) {
+      message.error("Không tìm thấy mã đơn hàng")
+      router.push("/profile")
+      return
     }
 
-    fetchOrder()
-  }, [orderCode, router])
+    if (orderData && !orderData.success) {
+      message.error("Không thể tải thông tin đơn hàng!")
+      router.push("/profile")
+    }
+  }, [orderCode, orderData, router])
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -109,33 +101,32 @@ function ReturnRequestContent() {
       return
     }
 
-    setIsSubmitting(true)
+    if (!order?._id || !user?.id) return
 
-    try {
-      const uploadFormData = new FormData()
-      uploadFormData.append("image", formData.image)
-      uploadFormData.append("orderId", order?._id || "")
-      uploadFormData.append("requestedBy", user?.id || "")
-      uploadFormData.append("reason", formData.reason)
-      uploadFormData.append("description", formData.description)
-
-      const res = await axios.post("http://localhost:5000/api/returns/return", uploadFormData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      })
-
-      if (res.data.success) {
-        setSubmitted(true)
-        message.success("Yêu cầu hoàn trả đã được gửi thành công!")
-        setTimeout(() => {
-          router.push("/profile")
-        }, 2000)
+    submitReturnMutation.mutate(
+      {
+        orderId: order._id,
+        requestedBy: user.id,
+        reason: formData.reason,
+        description: formData.description,
+        image: formData.image,
+      },
+      {
+        onSuccess: (res) => {
+          if (res.success) {
+            setSubmitted(true)
+            message.success("Yêu cầu hoàn trả đã được gửi thành công!")
+            setTimeout(() => {
+              router.push("/profile")
+            }, 2000)
+          }
+        },
+        onError: (error: any) => {
+          console.error("Lỗi khi gửi yêu cầu hoàn trả:", error)
+          message.error(error.response?.data?.message || "Không thể gửi yêu cầu hoàn trả")
+        },
       }
-    } catch (error: any) {
-      console.error("Lỗi khi gửi yêu cầu hoàn trả:", error)
-      message.error(error.response?.data?.message || "Không thể gửi yêu cầu hoàn trả")
-    } finally {
-      setIsSubmitting(false)
-    }
+    )
   }
 
   if (isLoading) {
@@ -314,12 +305,12 @@ function ReturnRequestContent() {
                     type="button"
                     variant="outline"
                     onClick={() => router.push("/profile")}
-                    disabled={isSubmitting}
+                    disabled={submitReturnMutation.isPending}
                   >
                     Hủy
                   </Button>
-                  <Button type="submit" disabled={isSubmitting} className="flex-1">
-                    {isSubmitting ? "Đang gửi..." : "Gửi yêu cầu hoàn trả"}
+                  <Button type="submit" disabled={submitReturnMutation.isPending} className="flex-1">
+                    {submitReturnMutation.isPending ? "Đang gửi..." : "Gửi yêu cầu hoàn trả"}
                   </Button>
                 </div>
               </form>

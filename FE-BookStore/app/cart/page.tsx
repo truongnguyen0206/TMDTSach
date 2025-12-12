@@ -15,60 +15,23 @@ import PromotionSelector from "@/components/promotion-selector"
 import { message } from "antd"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { getActiveAddresses, getCustomerByUserId, softDeleteAddress, addCustomerAddress } from "@/utils/addressApi"
 import { useAuth } from "@/contexts/auth-context"
-
-const checkStockAvailability = async (cartItems: any[]) => {
-  try {
-    const response = await fetch("http://localhost:5000/api/books")
-    if (!response.ok) {
-      throw new Error("Không thể lấy thông tin stock")
-    }
-    const result = await response.json()
-    console.log("[v0] API Response:", result)
-
-    const books = Array.isArray(result) ? result : result.data || []
-
-    if (!Array.isArray(books)) {
-      throw new Error("Định dạng response API không hợp lệ")
-    }
-
-    const stockIssues: { title: string; requested: number; available: number }[] = []
-
-    cartItems.forEach((item) => {
-      const book = books.find((b: any) => b._id === item.product.id)
-
-      if (!book) {
-        console.log("[v0] Book not found:", item.product.id)
-        stockIssues.push({
-          title: item.product.title || "Sản phẩm không xác định",
-          requested: item.quantity,
-          available: 0,
-        })
-      } else if (book.stock < item.quantity) {
-        console.log("[v0] Stock issue:", { book: book.title, requested: item.quantity, available: book.stock })
-        stockIssues.push({
-          title: book.title,
-          requested: item.quantity,
-          available: book.stock || 0,
-        })
-      }
-    })
-
-    return { success: true, stockIssues }
-  } catch (error) {
-    console.error("❌ Lỗi kiểm tra stock:", error)
-    return {
-      success: false,
-      error: "Không thể kiểm tra stock: " + (error instanceof Error ? error.message : "Lỗi không xác định"),
-    }
-  }
-}
+import { useBooks } from "@/hooks/useBooks"
+import { useCustomerByUserId } from "@/hooks/useCustomers"
+import { useCustomerAddresses, useAddAddress, useDeleteAddress } from "@/hooks/useAddresses"
 
 export default function CartPage() {
   const { user } = useAuth()
-
   const router = useRouter()
+
+  // React Query hooks
+  const { data: booksData } = useBooks()
+  const { data: customerData } = useCustomerByUserId(user?.id || "")
+  const customerId = customerData?.data?._id || ""
+  const { data: addressesData } = useCustomerAddresses(customerId)
+  const addAddressMutation = useAddAddress()
+  const deleteAddressMutation = useDeleteAddress()
+
   const {
     items,
     clearCart,
@@ -86,7 +49,6 @@ export default function CartPage() {
     getSelectedAddress,
   } = useCart()
 
-  const [customerId, setCustomerId] = useState(null)
   const [showAddressForm, setShowAddressForm] = useState(false)
   const [isCheckingStock, setIsCheckingStock] = useState(false)
   const [address, setAddress] = useState({
@@ -96,46 +58,55 @@ export default function CartPage() {
     city: "",
   })
 
+  // Sync addresses from API to cart context
   useEffect(() => {
-    const fetchAddresses = async () => {
-      try {
-        if (!user?.id) return
-
-        // 1. Get customerId from userId
-        const customerRes = await getCustomerByUserId(user.id)
-        if (!customerRes.success || !customerRes.data) {
-          message.error("Không tìm thấy khách hàng tương ứng!")
-          return
-        }
-
-        const cId = customerRes.data._id
-        setCustomerId(cId)
-
-        // 2. Get addresses list from API
-        const addressRes = await getActiveAddresses(cId)
-        if (addressRes.success) {
-          const formattedAddresses = (addressRes.addresses || []).map((addr: any) => ({
-            id: addr.id || addr._id,
-            street: addr.street,
-            ward: addr.ward,
-            district: addr.district,
-            city: addr.city,
-          }))
-          setDeliveryAddresses(formattedAddresses)
-          if (formattedAddresses.length > 0 && !selectedAddressId) {
-            selectAddress(formattedAddresses[0].id)
-          }
-        } else {
-          message.error(addressRes.message || "Không thể tải danh sách địa chỉ")
-        }
-      } catch (error) {
-        console.error("❌ Lỗi khi lấy địa chỉ:", error)
-        message.error("Không thể tải danh sách địa chỉ")
+    if (addressesData?.success && addressesData.addresses) {
+      const formattedAddresses = addressesData.addresses.map((addr: any) => ({
+        id: addr.id || addr._id,
+        street: addr.street,
+        ward: addr.ward,
+        district: addr.district,
+        city: addr.city,
+      }))
+      setDeliveryAddresses(formattedAddresses)
+      if (formattedAddresses.length > 0 && !selectedAddressId) {
+        selectAddress(formattedAddresses[0].id)
       }
     }
+  }, [addressesData, setDeliveryAddresses, selectedAddressId, selectAddress])
 
-    fetchAddresses()
-  }, [user, setDeliveryAddresses, selectedAddressId])
+  const checkStockAvailability = async (cartItems: any[]) => {
+    try {
+      const books = booksData?.data || []
+      const stockIssues: { title: string; requested: number; available: number }[] = []
+
+      cartItems.forEach((item) => {
+        const book = books.find((b: any) => b._id === item.product.id)
+
+        if (!book) {
+          stockIssues.push({
+            title: item.product.title || "Sản phẩm không xác định",
+            requested: item.quantity,
+            available: 0,
+          })
+        } else if (book.stock < item.quantity) {
+          stockIssues.push({
+            title: book.title,
+            requested: item.quantity,
+            available: book.stock || 0,
+          })
+        }
+      })
+
+      return { success: true, stockIssues }
+    } catch (error) {
+      console.error("❌ Lỗi kiểm tra stock:", error)
+      return {
+        success: false,
+        error: "Không thể kiểm tra stock: " + (error instanceof Error ? error.message : "Lỗi không xác định"),
+      }
+    }
+  }
 
   const handleClearCart = () => {
     clearCart()
@@ -153,43 +124,26 @@ export default function CartPage() {
       return
     }
 
-    try {
-      // Gửi địa chỉ chi tiết thay vì fullAddress
-      const result = await addCustomerAddress(customerId, {
+    addAddressMutation.mutate(
+      {
+        customerId,
         street: address.street,
         ward: address.ward,
         district: address.district,
         city: address.city,
-      })
-
-      if (result.success) {
-        // Refresh addresses list from API
-        const addressRes = await getActiveAddresses(customerId)
-        if (addressRes.success) {
-          const formattedAddresses = (addressRes.addresses || []).map((addr: any) => ({
-            id: addr.id || addr._id,
-            street: addr.street,
-            ward: addr.ward,
-            district: addr.district,
-            city: addr.city,
-          }))
-          setDeliveryAddresses(formattedAddresses)
-
-          // Auto-select the newly added address
-          if (formattedAddresses.length > 0) {
-            selectAddress(formattedAddresses[formattedAddresses.length - 1].id)
-          }
-        }
-        message.success("Đã lưu địa chỉ giao hàng!")
-        setAddress({ street: "", ward: "", district: "", city: "" })
-        setShowAddressForm(false)
-      } else {
-        message.error(result.message || "Không thể lưu địa chỉ")
+      },
+      {
+        onSuccess: () => {
+          message.success("Đã lưu địa chỉ giao hàng!")
+          setAddress({ street: "", ward: "", district: "", city: "" })
+          setShowAddressForm(false)
+        },
+        onError: (error: any) => {
+          console.error("❌ Lỗi khi lưu địa chỉ:", error)
+          message.error("Không thể lưu địa chỉ")
+        },
       }
-    } catch (error) {
-      console.error("❌ Lỗi khi lưu địa chỉ:", error)
-      message.error("Không thể lưu địa chỉ")
-    }
+    )
   }
 
   const handleSelectAddress = (addressId: string) => {
@@ -200,35 +154,24 @@ export default function CartPage() {
   const handleDeleteAddress = async (addressId: string) => {
     if (!customerId) return
 
-    try {
-      // Find the index of the address to delete
-      const index = deliveryAddresses.findIndex((addr) => addr.id === addressId)
-      if (index === -1) return
+    const index = deliveryAddresses.findIndex((addr) => addr.id === addressId)
+    if (index === -1) return
 
-      const result = await softDeleteAddress(customerId, index)
-      if (result.success) {
-        const updatedAddresses = (result.addresses || []).map((addr: any) => ({
-          id: addr.id || addr._id,
-          street: addr.street,
-          ward: addr.ward,
-          district: addr.district,
-          city: addr.city,
-        }))
-        setDeliveryAddresses(updatedAddresses)
-
-        if (selectedAddressId === addressId) {
-          if (updatedAddresses.length > 0) {
-            selectAddress(updatedAddresses[0].id)
-          }
-        }
-        message.success("Đã xóa địa chỉ!")
-      } else {
-        message.error(result.message || "Không thể xóa địa chỉ")
+    deleteAddressMutation.mutate(
+      {
+        customerId,
+        index,
+      },
+      {
+        onSuccess: () => {
+          message.success("Đã xóa địa chỉ!")
+        },
+        onError: (error: any) => {
+          console.error("❌ Lỗi khi xóa địa chỉ:", error)
+          message.error("Không thể xóa địa chỉ")
+        },
       }
-    } catch (error) {
-      console.error("❌ Lỗi khi xóa địa chỉ:", error)
-      message.error("Không thể xóa địa chỉ")
-    }
+    )
   }
 
   const handleCheckout = async () => {
@@ -425,11 +368,10 @@ export default function CartPage() {
               {deliveryAddresses.map((addr) => (
                 <div
                   key={addr.id}
-                  className={`p-4 rounded-lg border-2 transition-all cursor-pointer ${
-                    selectedAddressId === addr.id
-                      ? "border-blue-500 bg-blue-50"
-                      : "border-gray-200 hover:border-gray-300"
-                  }`}
+                  className={`p-4 rounded-lg border-2 transition-all cursor-pointer ${selectedAddressId === addr.id
+                    ? "border-blue-500 bg-blue-50"
+                    : "border-gray-200 hover:border-gray-300"
+                    }`}
                   onClick={() => handleSelectAddress(addr.id)}
                 >
                   <div className="flex items-start justify-between">

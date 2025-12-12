@@ -9,13 +9,11 @@ function DetailOrders() {
   const [statusFilter, setStatusFilter] = useState("all")
   const [returnFilter, setReturnFilter] = useState("all")
   const [activeDropdown, setActiveDropdown] = useState(null)
-  const [isLoading, setIsLoading] = useState(true)
   const navigate = useNavigate()
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        setIsLoading(true)
         const res = await fetch("http://localhost:5000/api/orders")
         const result = await res.json()
 
@@ -35,11 +33,19 @@ function DetailOrders() {
         }
       } catch (err) {
         console.error("❌ Error fetching orders:", err)
-      } finally {
-        setIsLoading(false)
       }
     }
+
+    // Fetch immediately on mount
     fetchData()
+
+    // Set up interval to fetch every 4 seconds
+    const intervalId = setInterval(() => {
+      fetchData()
+    }, 4000)
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(intervalId)
   }, [])
 
   const filteredOrders = orders.filter((o) => {
@@ -133,7 +139,7 @@ function DetailOrders() {
       <div className="max-w-10xl mx-auto space-y-6">
         {/* Tiêu đề */}
         <div className="bg-white rounded-lg shadow-sm p-6 border">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Quản lý Đơn hàng</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Quảdsds lý Đơn hàng</h1>
           <p className="text-gray-600">Theo dõi và quản lý tất cả đơn hàng của khách hàng</p>
         </div>
 
@@ -200,11 +206,7 @@ function DetailOrders() {
               </thead>
 
               <tbody className="bg-white divide-y divide-gray-200">
-                {isLoading ? (
-                  <tr>
-                    <td colSpan={7} className="px-6 py-12 text-center">Đang tải dữ liệu...</td>
-                  </tr>
-                ) : filteredOrders.length === 0 ? (
+                {filteredOrders.length === 0 ? (
                   <tr>
                     <td colSpan={7} className="px-6 py-12 text-center text-gray-500">Không có đơn hàng</td>
                   </tr>
@@ -263,9 +265,9 @@ function DetailOrders() {
                               <MoreHorizontal className="w-4 h-4 text-gray-600" />
                             </button>
 
-                             {activeDropdown === order._id && (
-                            <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
-                              {/* <button
+                            {activeDropdown === order._id && (
+                              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
+                                {/* <button
                                 onClick={() => handleReturnRequest(order._id, "approve")}
                                 className="block w-full text-left px-4 py-2 text-sm text-green-700 hover:bg-green-50"
                               >

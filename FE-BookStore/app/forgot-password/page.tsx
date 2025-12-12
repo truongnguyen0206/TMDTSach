@@ -9,14 +9,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label"
 import { Mail, ArrowLeft } from "lucide-react"
 import { message } from "antd"
-import axios from "axios"
+import { useForgotPassword } from "@/hooks/useAuth"
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
   const router = useRouter()
   const [messageApi, contextHolder] = message.useMessage()
+
+  const forgotPasswordMutation = useForgotPassword()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -33,28 +34,23 @@ export default function ForgotPasswordPage() {
       return
     }
 
-    setIsLoading(true)
+    forgotPasswordMutation.mutate(email, {
+      onSuccess: (response) => {
+        if (response.success) {
+          messageApi.success(response.data)
+          setIsSubmitted(true)
 
-    try {
-      const response = await axios.post("http://localhost:5000/api/auth/forgotpassword", {
-        email,
-      })
-
-      if (response.data.success) {
-        messageApi.success(response.data.data)
-        setIsSubmitted(true)
-
-        // Redirect to login after 3 seconds
-        setTimeout(() => {
-          router.push("/login")
-        }, 3000)
-      }
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.message || "Có lỗi xảy ra. Vui lòng thử lại!"
-      messageApi.error(errorMessage)
-    } finally {
-      setIsLoading(false)
-    }
+          // Redirect to login after 3 seconds
+          setTimeout(() => {
+            router.push("/login")
+          }, 3000)
+        }
+      },
+      onError: (error: any) => {
+        const errorMessage = error.response?.data?.message || "Có lỗi xảy ra. Vui lòng thử lại!"
+        messageApi.error(errorMessage)
+      },
+    })
   }
 
   const handleBackToLogin = () => {
@@ -92,7 +88,7 @@ export default function ForgotPasswordPage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className="pl-10"
-                      disabled={isLoading}
+                      disabled={forgotPasswordMutation.isPending}
                       required
                     />
                   </div>
@@ -103,9 +99,9 @@ export default function ForgotPasswordPage() {
                 <Button
                   type="submit"
                   className="w-full bg-blue-600 hover:bg-blue-700 transition-all duration-200 transform hover:scale-105"
-                  disabled={isLoading}
+                  disabled={forgotPasswordMutation.isPending}
                 >
-                  {isLoading ? "Đang xử lý..." : "Gửi mật khẩu mới"}
+                  {forgotPasswordMutation.isPending ? "Đang xử lý..." : "Gửi mật khẩu mới"}
                 </Button>
               </form>
             ) : (

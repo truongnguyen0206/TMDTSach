@@ -74,7 +74,7 @@ io.on("connection", (socket) => {
 // Cấu hình CORS - cho phép frontend truy cập
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://127.0.0.1:5173" , "http://localhost:3000","http://localhost:3001"],
+    origin: ["http://localhost:5173", "http://127.0.0.1:5173" , "http://localhost:3000","http://localhost:3001", "https://tmdt-sach.vercel.app/", "https://tmdt-sach.vercel.app"],
     credentials: true, // Cho phép gửi cookie qua CORS
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],

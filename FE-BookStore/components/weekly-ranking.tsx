@@ -1,92 +1,52 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Star, TrendingUp } from "lucide-react"
 import { useCart } from "@/contexts/cart-context"
 import { message } from "antd"
-import axios from "axios"
-
-interface TopProduct {
-  productId: string
-  _id?: string
-  title: string
-  author?: string
-  category: string
-  image?: string
-  coverImage?: string
-  ISSN?: string
-  totalQuantity: number
-  totalRevenue: number
-  price?: number
-  stock?: number
-  volume?: string
-}
+import { useTopProducts } from "@/hooks/useBooks"
+import type { TopProduct } from "@/interface/response/book"
 
 export default function WeeklyRanking() {
   const { addToCart } = useCart()
   const [selectedCategory, setSelectedCategory] = useState("Tất cả")
-  const [topProducts, setTopProducts] = useState<TopProduct[]>([])
-  const [rankedBooks, setRankedBooks] = useState<TopProduct[]>([])
   const [selectedBook, setSelectedBook] = useState<TopProduct | null>(null)
-  const [categories, setCategories] = useState<string[]>(["Tất cả"])
-  const [loading, setLoading] = useState(true)
 
- useEffect(() => {
-  const fetchTopProducts = async () => {
-    try {
-      setLoading(true)
-      const res = await axios.get("http://localhost:5000/api/statistics/top")
+  // Use React Query hook
+  const { data: topProductsData, isLoading: loading } = useTopProducts()
+  const topProducts = topProductsData?.data || []
 
-      if (res.data?.topProducts) {
-        const products = res.data.topProducts
-        setTopProducts(products)
-
-        // Lấy danh mục duy nhất từ các sản phẩm
-        const uniqueCategories = Array.from(
-          new Set(
-            products
-              .map((p: TopProduct) => p.category)
-              .filter((cat: string | undefined): cat is string => Boolean(cat)),  // Lọc các giá trị hợp lệ (không phải undefined, null, v.v.)
-          ),
-        )
-
-        // Đảm bảo "Tất cả" luôn nằm ở đầu danh sách
-        // Kiểm tra nếu uniqueCategories là mảng hợp lệ và có phần tử
-        if (Array.isArray(uniqueCategories) && uniqueCategories.length > 0) {
-          setCategories(["Tất cả", ...uniqueCategories])
-        } else {
-          setCategories(["Tất cả"])  // Nếu không có danh mục, chỉ có "Tất cả"
-        }
-
-        // Set initial selection
-        setSelectedCategory("Tất cả")
-      }
-    } catch (error) {
-      console.error("Lỗi khi tải xếp hạng:", error)
-      message.error("Không thể tải dữ liệu xếp hạng")
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  fetchTopProducts()
-}, [])
-
+  // Get unique categories
+  const categories = useMemo(() => {
+    const uniqueCategories = Array.from(
+      new Set(
+        topProducts
+          .map((p: TopProduct) => p.category)
+          .filter((cat: string | undefined): cat is string => Boolean(cat))
+      )
+    )
+    return Array.isArray(uniqueCategories) && uniqueCategories.length > 0
+      ? ["Tất cả", ...uniqueCategories]
+      : ["Tất cả"]
+  }, [topProducts])
 
   // Filter products based on selected category
-  useEffect(() => {
+  const rankedBooks = useMemo(() => {
     let filtered = topProducts
-
     if (selectedCategory !== "Tất cả") {
-      filtered = topProducts.filter((p) => p.category === selectedCategory)
+      filtered = topProducts.filter((p: TopProduct) => p.category === selectedCategory)
     }
-
-    const ranked = filtered.slice(0, 5)
-    setRankedBooks(ranked)
-    setSelectedBook(ranked[0] || null)
+    return filtered.slice(0, 5)
   }, [selectedCategory, topProducts])
+
+  // Set initial selected book
+  useEffect(() => {
+    if (rankedBooks.length > 0 && !selectedBook) {
+      setSelectedBook(rankedBooks[0])
+    }
+  }, [rankedBooks, selectedBook])
 
   const handleAddToCart = (book: TopProduct) => {
     if (!book.productId) {
@@ -125,11 +85,10 @@ export default function WeeklyRanking() {
           <button
             key={cat}
             onClick={() => setSelectedCategory(cat)}
-            className={`px-4 py-2 whitespace-nowrap rounded transition-all ${
-              selectedCategory === cat
-                ? "bg-red-500 text-white font-semibold"
-                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-            }`}
+            className={`px-4 py-2 whitespace-nowrap rounded transition-all ${selectedCategory === cat
+              ? "bg-red-500 text-white font-semibold"
+              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+              }`}
           >
             {cat}
           </button>
@@ -145,11 +104,10 @@ export default function WeeklyRanking() {
               <div
                 key={book.productId}
                 onClick={() => setSelectedBook(book)}
-                className={`flex gap-4 p-4 rounded-lg cursor-pointer transition-all ${
-                  selectedBook?.productId === book.productId
-                    ? "bg-red-50 border-2 border-red-500"
-                    : "bg-gray-50 border border-gray-200 hover:bg-gray-100"
-                }`}
+                className={`flex gap-4 p-4 rounded-lg cursor-pointer transition-all ${selectedBook?.productId === book.productId
+                  ? "bg-red-50 border-2 border-red-500"
+                  : "bg-gray-50 border border-gray-200 hover:bg-gray-100"
+                  }`}
               >
                 {/* Ranking Number */}
                 <div className="flex flex-col items-center justify-center min-w-12">

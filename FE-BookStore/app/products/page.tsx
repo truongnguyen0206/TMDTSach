@@ -1,77 +1,34 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
-import axios from "axios"
+import { useState, useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Search, Filter, Grid, List } from "lucide-react"
-import { message } from "antd"
 import ProductCard from "@/components/product-card"
-
-interface Category {
-  _id: string
-  name: string
-}
-
-interface Product {
-  _id: string
-  title: string
-  author: string
-  ISSN: string
-  category: Category
-  price: number
-  stock: number
-  publishYear: number
-  pages: number
-  coverImage: string
-  description: string
-  volume?: string
-}
+import { useBooks } from "@/hooks/useBooks"
+import type { Book } from "@/interface/response/book"
 
 export default function ProductsPage() {
-  const [products, setProducts] = useState<Product[]>([])
-  const [categories, setCategories] = useState<string[]>([])
-  const [loading, setLoading] = useState(true)
+  const { data: booksData, isLoading: loading } = useBooks()
+
+  const products = booksData?.data || []
+  const categories = useMemo(() => {
+    const uniqueCategories = Array.from(
+      new Set(
+        products.map((b: Book) => (b && b.category && b.category.name ? b.category.name : "Khác"))
+      )
+    )
+    return ["Tất cả", ...uniqueCategories]
+  }, [products])
+
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("Tất cả")
   const [sortBy, setSortBy] = useState("default")
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 12
-
-
-const fetchBooks = async () => {
-  try {
-    setLoading(true);
-
-    const res = await axios.get("http://localhost:5000/api/books");
-    if (res.data && res.data.success) {
-      const books: Product[] = res.data.data || [];
-      setProducts(books);
-      // Lấy danh sách tên danh mục duy nhất - an toàn nếu category null/undefined
-      const uniqueCategories = Array.from(
-        new Set(
-          books.map((b: Product) => (b && b.category && b.category.name ? b.category.name : "Khác"))
-        )
-      );
-      setCategories(["Tất cả", ...uniqueCategories]);
-    } else {
-      setProducts(res.data.data || res.data || []);
-      setCategories([]);
-    }
-  } catch (error) {
-    console.error("Lỗi khi tải sách:", error);
-    message.error("Không thể tải danh sách sách.");
-  } finally {
-    setLoading(false);
-  }
-};
-
-  useEffect(() => {
-    fetchBooks()
-  }, [])
 
   const filteredProducts = useMemo(() => {
     let result = products

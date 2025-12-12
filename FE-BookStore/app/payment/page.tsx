@@ -274,6 +274,7 @@ import { useCart } from "@/contexts/cart-context"
 import { message } from "antd"
 import { useAuth } from "@/contexts/auth-context"
 import { CheckoutData } from "@/lib/orders-data"
+import { useCreateOrder, useCreateVNPayOrder } from "@/hooks/useOrders"
 
 export default function PaymentPage() {
   const router = useRouter()
@@ -282,6 +283,9 @@ export default function PaymentPage() {
   const [checkoutData, setCheckoutData] = useState<CheckoutData | null>(null)
   const [orderId, setOrderId] = useState<string>("")
   const { user } = useAuth()
+
+  const createOrderMutation = useCreateOrder()
+  const createVNPayOrderMutation = useCreateVNPayOrder()
 
   useEffect(() => {
     const savedCheckoutData = localStorage.getItem("checkoutData")
@@ -313,7 +317,7 @@ export default function PaymentPage() {
 
       const orderData = {
         orderCode: orderId,
-        user: user?.id,
+        user: user?.id || "",
         items: orderItems,
         shippingAddress: checkoutData.shippingAddress,
         subtotal: checkoutData.subtotal,
@@ -325,41 +329,43 @@ export default function PaymentPage() {
 
       // Nếu chọn thanh toán COD
       if (checkoutData.paymentMethod === "cod") {
-        const response = await fetch("http://localhost:5000/api/orders", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(orderData),
+        createOrderMutation.mutate(orderData, {
+          onSuccess: () => {
+            message.success("Đặt hàng thành công (COD)!")
+            clearCart()
+            localStorage.removeItem("checkoutData")
+            router.push(`/order-confirmation?orderId=${orderId}`)
+          },
+          onError: (error: any) => {
+            message.error(error.response?.data?.message || "Không thể tạo đơn hàng. Vui lòng thử lại!")
+          },
+          onSettled: () => {
+            setIsProcessing(false)
+          },
         })
-        const result = await response.json()
-        if (result.success) {
-          message.success("Đặt hàng thành công (COD)!")
-          clearCart()
-          localStorage.removeItem("checkoutData")
-          router.push(`/order-confirmation?orderId=${orderId}`)
-        } else {
-          message.error(result.message || "Không thể tạo đơn hàng. Vui lòng thử lại!")
-        }
         return
       }
 
       // ✅ Nếu chọn thanh toán qua VNPay
-      const response = await fetch("http://localhost:5000/api/orders/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(orderData),
+      createVNPayOrderMutation.mutate(orderData, {
+        onSuccess: (result) => {
+          if (result.paymentUrl) {
+            // Chuyển hướng sang trang VNPay
+            window.location.href = result.paymentUrl
+          } else {
+            message.error("Không tạo được link thanh toán VNPay!")
+            setIsProcessing(false)
+          }
+        },
+        onError: (error: any) => {
+          console.error("Lỗi thanh toán:", error)
+          message.error("Có lỗi xảy ra khi thanh toán!")
+          setIsProcessing(false)
+        },
       })
-
-      const result = await response.json()
-      if (result.paymentUrl) {
-        // Chuyển hướng sang trang VNPay
-        window.location.href = result.paymentUrl
-      } else {
-        message.error("Không tạo được link thanh toán VNPay!")
-      }
     } catch (error) {
       console.error("Lỗi thanh toán:", error)
       message.error("Có lỗi xảy ra khi thanh toán!")
-    } finally {
       setIsProcessing(false)
     }
   }
