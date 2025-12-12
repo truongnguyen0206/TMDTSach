@@ -1,4 +1,5 @@
 import axios from "axios";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 export interface ShippingAddress {
   fullName: string
   phone: string
@@ -148,7 +149,7 @@ export function generateOrderNumber(): string {
 export async function createSampleOrders(): Promise<void> {
   try {
     // 1. Gọi API từ http://localhost:5000/api/orders/
-    const response = await axios.get("http://localhost:5000/api/orders/");
+    const response = await axios.get(`${API_URL}/orders`);
 
     // 2. Kiểm tra dữ liệu trả về từ API
     if (response.data.success && response.data.orders) {

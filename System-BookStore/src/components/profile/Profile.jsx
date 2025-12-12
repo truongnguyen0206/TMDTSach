@@ -2,6 +2,7 @@ import { useState } from "react"
 import { Modal, Input, Button, message } from "antd"
 import { useNavigate } from "react-router-dom"
 import axios from "axios" 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api"
 
 function Profile() {
   const [userName, setUserName] = useState(localStorage.getItem("userName") || "")
@@ -27,7 +28,7 @@ function Profile() {
       // Gửi yêu cầu API để thay đổi mật khẩu
       const token = localStorage.getItem("token") // Assuming the token is stored in localStorage
       const response = await axios.post(
-        "http://localhost:5000/api/auth/updatepassword", 
+        `${API_URL}/auth/updatepassword`, 
         {
           currentPassword,
           newPassword,

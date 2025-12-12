@@ -3,6 +3,7 @@ import axios from "axios";
 import { DatePicker, Button } from "antd"; 
 import dayjs from "dayjs";   
 import * as XLSX from "xlsx";  // Import thư viện XLSX
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 export default function Home() {
   const [stats, setStats] = useState(null);
@@ -13,7 +14,7 @@ export default function Home() {
   const fetchStats = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("http://localhost:5000/api/statistics", {
+      const res = await axios.get(`${API_URL}/statistics`, {
         params: {
           startDate: startDate ? startDate.format("YYYY-MM-DD") : undefined,
           endDate: endDate ? endDate.format("YYYY-MM-DD") : undefined,
