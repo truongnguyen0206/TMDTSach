@@ -3,6 +3,7 @@ import { Modal, Input, InputNumber, message, Select } from "antd";
 import axios from "axios";
 
 const { Option } = Select;
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 const EditBookModal = ({ isOpen, onClose, book, onBookUpdated }) => {
   const [formData, setFormData] = useState({
@@ -23,7 +24,7 @@ const EditBookModal = ({ isOpen, onClose, book, onBookUpdated }) => {
   // Lấy danh sách category
   const fetchCategories = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/categories");
+      const res = await fetch(`${API_URL}/categories`);
       const data = await res.json();
       if (data.success) setCategories(data.data);
     } catch (error) {
@@ -91,7 +92,7 @@ const EditBookModal = ({ isOpen, onClose, book, onBookUpdated }) => {
       }
 
       const res = await axios.patch(
-        `http://localhost:5000/api/books/${book._id}`,
+        `${API_URL}/books/${book._id}`,
         data,
         { headers: { "Content-Type": "multipart/form-data" } }
       );

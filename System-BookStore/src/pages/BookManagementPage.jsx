@@ -4,6 +4,7 @@ import { Plus, Edit2, Trash2 } from "lucide-react";
 import { Modal, message } from "antd";
 import AddBookModal from "./AddBookModal";
 import EditBookModal from "./EditBookModal";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 const BookManagementPage = () => {
   const [search, setSearch] = useState("");
@@ -23,7 +24,7 @@ const BookManagementPage = () => {
   const fetchBooks = async () => {
     try {
       setLoading(true);
-      const res = await axios.get("http://localhost:5000/api/books");
+      const res = await axios.get(`${API_URL}/books`);
       if (res.data && res.data.success) {
         setBooks(res.data.data);
       } else {
@@ -74,7 +75,7 @@ const BookManagementPage = () => {
       centered: true,
       async onOk() {
         try {
-          const res = await axios.put(`http://localhost:5000/api/books/${bookId}`);
+          const res = await axios.put(`${API_URL}/books/${bookId}`);
           if (res.data && res.data.success) {
             message.success("Đã xóa sách thành công!");
             fetchBooks();

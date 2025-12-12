@@ -24,6 +24,7 @@ import {
 } from "@ant-design/icons";
 
 const { Title, Text } = Typography;
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 export default function ImportBooksPage() {
   const navigate = useNavigate();
@@ -43,7 +44,7 @@ export default function ImportBooksPage() {
       if (!userId) return;
 
       try {
-        const res = await axios.get(`http://localhost:5000/api/employeesID/user/${userId}`);
+        const res = await axios.get(`${API_URL}/employeesID/user/${userId}`);
         if (res.data.success) {
           setCurrentEmployee(res.data.data);
           console.log("✅ Nhân viên hiện tại:", res.data.data);
@@ -81,7 +82,7 @@ export default function ImportBooksPage() {
   useEffect(() => {
     const fetchBooks = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/books");
+        const res = await axios.get(`${API_URL}/books`);
         if (res.data.success) {
           setBooks(res.data.data);
           console.log("✅ Dữ liệu sách:", res.data.data);
@@ -178,7 +179,7 @@ export default function ImportBooksPage() {
     if (importList.length === 0) return message.warning("Danh sách nhập trống");
 
     try {
-      const res = await axios.post("http://localhost:5000/api/warehouse", {
+      const res = await axios.post(`${API_URL}/warehouse`, {
         enteredBy: currentEmployee._id,
         content: importList.map((item) => ({
           book: item._id,

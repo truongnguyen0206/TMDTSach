@@ -6,6 +6,7 @@ import { PlusOutlined, FileTextOutlined } from "@ant-design/icons"
 import axios from "axios"
 import { useNavigate } from "react-router-dom"
 import { Modal, Descriptions } from "antd"
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 export default function WarehouseListPage() {
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(false)
@@ -16,7 +17,7 @@ export default function WarehouseListPage() {
   const fetchData = async () => {
     try {
       setLoading(true)
-      const res = await axios.get("http://localhost:5000/api/warehouse")
+      const res = await axios.get(`${API_URL}/warehouse`)
     if (res.data.success) {
       const sorted = res.data.data.sort(
         (a, b) => new Date(b.date) - new Date(a.date)

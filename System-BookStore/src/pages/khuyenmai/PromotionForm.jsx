@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { message, Modal } from "antd"
 import { Book } from "lucide-react"
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 // ------------------ ICONS ------------------
 const PercentIcon = () => (
@@ -125,7 +126,7 @@ export default function PromotionForm() {
           return
         }
 
-        const response = await fetch(`http://localhost:5000/api/employeesID/user/${userId}`)
+        const response = await fetch(`${API_URL}/employeesID/user/${userId}`)
         if (!response.ok) throw new Error("Failed to fetch employee")
         const data = await response.json()
         console.log("[v0] Current employee fetched:", data)
@@ -152,7 +153,7 @@ export default function PromotionForm() {
   const fetchBooks = async () => {
     try {
       setBooksLoading(true)
-      const response = await fetch("http://localhost:5000/api/books")
+      const response = await fetch(`${API_URL}/books`)
       if (!response.ok) throw new Error("Failed to fetch books")
       const data = await response.json()
       console.log("[v0] Books fetched:", data)
@@ -167,7 +168,7 @@ export default function PromotionForm() {
 
   const fetchPromotions = async () => {
     try {
-      const response = await fetch("http://localhost:5000/api/promotions")
+      const response = await fetch(`${API_URL}/promotions`)
       if (!response.ok) throw new Error("Failed to fetch promotions")
       const data = await response.json()
       console.log("[v0] Promotions fetched:", data)
@@ -239,7 +240,7 @@ export default function PromotionForm() {
         }
 
         console.log("[v0] Submitting by-book promotion:", promotionData)
-        const response = await fetch("http://localhost:5000/api/promotions", {
+        const response = await fetch(`${API_URL}/promotions`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(promotionData),
@@ -294,7 +295,7 @@ export default function PromotionForm() {
         }
 
         console.log("[v0] Submitting promotion:", promotionData)
-        const response = await fetch("http://localhost:5000/api/promotions", {
+        const response = await fetch(`${API_URL}/promotions/${id}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(promotionData),
@@ -351,7 +352,7 @@ export default function PromotionForm() {
       okType: "danger",
       async onOk() {
         try {
-          const response = await fetch(`http://localhost:5000/api/promotions/${id}`, {
+          const response = await fetch(`${API_URL}/promotions/${id}`, {
             method: "DELETE",
           })
           if (!response.ok) throw new Error("Failed to delete promotion")
@@ -368,7 +369,7 @@ export default function PromotionForm() {
   const toggleStatus = async (id, currentStatus) => {
     try {
       const newStatus = currentStatus === "active" ? "inactive" : "active"
-      const response = await fetch(`http://localhost:5000/api/promotions/${id}`, {
+      const response = await fetch(`${API_URL}/promotions/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),

@@ -8,11 +8,7 @@ import { jsPDF } from "jspdf"
 import { useNavigate } from "react-router-dom"
 import { notification } from "antd";
 
-/**
- * OrderPage.jsx
- * - Full UI + logic
- * - Xuất hoá đơn PDF sử dụng html2canvas + jsPDF
- */
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 const OrderPage = () => {
   const { id } = useParams()
@@ -51,7 +47,7 @@ const OrderPage = () => {
     if (!uId) return "Không xác định"
     if (userNames[uId]) return userNames[uId]
     try {
-      const res = await fetch(`http://localhost:5000/api/users/${uId}`)
+      const res = await fetch(`${API_URL}/users/${uId}`)
       if (res.ok) {
         const result = await res.json()
         if (result.success && result.data) {
@@ -71,7 +67,7 @@ const OrderPage = () => {
 const fetchEmployeeName = async () => {
   try {
     if (!userNametoken) return
-    const res = await fetch(`http://localhost:5000/api/users/${userNametoken}`)
+    const res = await fetch(`${API_URL}/users/${userNametoken}`)
     if (res.ok) {
       const result = await res.json()
       if (result.success && result.data) {
@@ -92,7 +88,7 @@ console.log("12",userNametoken);
     try {
       setLoading(true)
       setError(null)
-      const res = await fetch(`http://localhost:5000/api/orders/${id}`)
+      const res = await fetch(`${API_URL}/orders/${id}`)
       if (!res.ok) throw new Error("Không thể tải thông tin đơn hàng")
       const result = await res.json()
       if (result.success && result.order) {
@@ -150,7 +146,7 @@ const handleConfirmOrder = async () => {
   if (currentIndex < statusFlow.length - 1) {
     const newStatus = statusFlow[currentIndex + 1];
     try {
-      const res = await fetch(`http://localhost:5000/api/orders/status/${id}`, {
+      const res = await fetch(`${API_URL}/orders/status/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus, userId }),
@@ -199,7 +195,7 @@ const handleConfirmOrder = async () => {
   const handleAcceptReturn = async () => {
     if (!order) return
     try {
-      const res = await fetch(`http://localhost:5000/api/orders/${id}/return`, {
+      const res = await fetch(`${API_URL}/orders/${id}/return`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ returnStatus: "approved", handledBy: userId }),
@@ -298,7 +294,7 @@ const handleRejectOrder = async () => {
   if (!order || !userId) return;
 
   try {
-    const res = await fetch(`http://localhost:5000/api/orders/status/rejectOrder/${id}`, {
+    const res = await fetch(`${API_URL}/orders/status/rejectOrder/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: "tuchoi", userId }),

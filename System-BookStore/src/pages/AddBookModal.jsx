@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+
 export default function AddBookModal({ isOpen, onClose, onBookAdded }) {
   const [categories, setCategories] = useState([]);
   const [newCategoryName, setNewCategoryName] = useState("");
@@ -26,7 +28,7 @@ export default function AddBookModal({ isOpen, onClose, onBookAdded }) {
 
   const fetchCategories = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/categories");
+      const res = await fetch(`${API_URL}/categories`);
       const data = await res.json();
       if (data.success) setCategories(data.data);
     } catch (error) {
@@ -66,7 +68,7 @@ const handleSubmit = async (e) => {
       }
     });
 
-    const res = await fetch("http://localhost:5000/api/books", {
+    const res = await fetch(`${API_URL}/books`, {
       method: "POST",
       body: formDataToSend,
     });
