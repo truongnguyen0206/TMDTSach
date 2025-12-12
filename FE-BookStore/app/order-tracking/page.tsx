@@ -59,7 +59,8 @@ export default function OrderTrackingPage() {
     setIsSearching(true)
 
     try {
-      const res = await fetch(`http://localhost:5000/api/orders/orderCode/${code.trim()}`)
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+      const res = await fetch(`${API_URL}/orders/orderCode/${code.trim()}`)
       if (!res.ok) throw new Error("Không tìm thấy đơn hàng")
       const data = await res.json()
       setOrder(data.order)

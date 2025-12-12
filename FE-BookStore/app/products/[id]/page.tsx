@@ -43,7 +43,8 @@ export default function ProductDetailPage() {
     const fetchProduct = async () => {
       try {
         setLoading(true)
-        const res = await axios.get(`http://localhost:5000/api/books/${productId}`)
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+        const res = await axios.get(`${API_URL}/books/${productId}`)
         if (res.data && res.data.success) {
           setProduct(res.data.data)
         } else {
