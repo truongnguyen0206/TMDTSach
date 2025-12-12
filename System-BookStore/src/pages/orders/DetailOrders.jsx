@@ -139,7 +139,7 @@ function DetailOrders() {
       <div className="max-w-10xl mx-auto space-y-6">
         {/* Tiêu đề */}
         <div className="bg-white rounded-lg shadow-sm p-6 border">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Quảdsds lý Đơn hàng</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Quản lý Đơn hàng</h1>
           <p className="text-gray-600">Theo dõi và quản lý tất cả đơn hàng của khách hàng</p>
         </div>
 
