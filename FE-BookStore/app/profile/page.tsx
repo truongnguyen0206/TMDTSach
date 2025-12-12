@@ -16,7 +16,6 @@ import { useUpdatePassword } from "@/hooks/useAuth"
 import type { Order } from "@/interface/response/order"
 
 export default function ProfilePage() {
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
   const router = useRouter()
   const { user, isAuthenticated } = useAuth()
   const { data: ordersData, isLoading } = useUserOrders(user?.id || "")

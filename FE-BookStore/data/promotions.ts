@@ -1,7 +1,7 @@
 import type { Promotion } from "@/contexts/cart-context"
+import { API_URL as BASE_API_URL } from "@/lib/config"
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"
-const API_URL = `${BASE_URL}/promotions`
+const API_URL = `${BASE_API_URL}/promotions`
 
 let SAMPLE_PROMOTIONS: Promotion[] = []
 

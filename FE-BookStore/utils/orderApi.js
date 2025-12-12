@@ -1,10 +1,9 @@
 import axios from "axios"
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"
+import { API_URL } from "@/lib/config"
 
 // 👉 Tạo instance axios chung (có thể thêm token sau này)
 const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: API_URL,
   headers: {
     "Content-Type": "application/json",
   },

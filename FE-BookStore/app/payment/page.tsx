@@ -277,7 +277,6 @@ import { CheckoutData } from "@/lib/orders-data"
 import { useCreateOrder, useCreateVNPayOrder } from "@/hooks/useOrders"
 
 export default function PaymentPage() {
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
   const router = useRouter()
   const { clearCart } = useCart()
   const [isProcessing, setIsProcessing] = useState(false)
