@@ -8,6 +8,7 @@ import { getUserProfile } from "../../utils/auth";
 
 const { Step } = Steps;
 const { confirm } = Modal;
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 const stepList = [
   { key: "pending", label: "Đang yêu cầu" },
@@ -33,7 +34,7 @@ const ReturnDetailPage = () => {
   const fetchOrder = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`http://localhost:5000/api/returns/order/${id}`);
+      const res = await fetch(`${API_URL}/returns/order/${id}`);
       const result = await res.json();
       if (result.success && result.data) setOrder(result.data);
       else message.error(result.message || "Không tìm thấy yêu cầu hoàn trả");
@@ -80,7 +81,7 @@ const ReturnDetailPage = () => {
       onOk: async () => {
         try {
           setUpdating(true);
-          const res = await fetch(`http://localhost:5000/api/returns/acceptReturn/${id}`, {
+          const res = await fetch(`${API_URL}/returns/acceptReturn/${id}`, {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ userId: user.id, userName: user.name }),
@@ -113,7 +114,7 @@ const ReturnDetailPage = () => {
       onOk: async () => {
         try {
           setUpdating(true);
-          const res = await fetch(`http://localhost:5000/api/returns/rejectReturn/${id}`, {
+          const res = await fetch(`${API_URL}/returns/rejectReturn/${id}`, {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ userId: user.id, userName: user.name }),

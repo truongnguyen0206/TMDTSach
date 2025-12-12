@@ -12,6 +12,7 @@ import {
 } from "@ant-design/icons"
 import { useNavigate } from "react-router-dom"
 import axios from "axios"
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 const { Search } = Input
 
@@ -27,7 +28,7 @@ export default function BookInventoryPage() {
     const fetchBooks = async () => {
       try {
         setLoading(true)
-        const res = await axios.get("http://localhost:5000/api/books")
+        const res = await axios.get(`${API_URL}/books`)
         if (res.data.success) {
           // Chuyển dữ liệu từ API về định dạng phù hợp với bảng
           const formattedBooks = res.data.data.map((book) => ({

@@ -1,7 +1,7 @@
 
 import axios from "axios"
 
-const API_URL = "http://localhost:5000/api" // ⚙️ chỉnh port nếu BE khác
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api"
 
 // Tự động gửi cookie khi cần
 axios.defaults.withCredentials = true
